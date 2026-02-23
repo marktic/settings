@@ -1,0 +1,47 @@
+{
+  "name": "marktic/settings",
+  "type": "library",
+  "license": "MIT",
+  "description": "Multi-tenant settings management package",
+  "keywords": ["settings", "configuration", "multitenant"],
+  "homepage": "https://github.com/marktic/settings",
+  "authors": [
+    {
+      "name": "Gabriel Solomon",
+      "email": "hello@gabrielsolomon.ro"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Marktic\\Settings\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Marktic\\Settings\\Tests\\": "tests/src",
+      "Marktic\\Settings\\Tests\\Fixtures\\": "tests/fixtures"
+    }
+  },
+  "require": {
+    "php": ">=8.2",
+    "ext-json": "*",
+    "bytic/package-base": "^1.0",
+    "bytic/migrations": "~0.12||~0.13",
+    "bytic/orm": "^0.9|^1.0|^2.0",
+    "bytic/orm-behaviors": "^0.9|^1.0|^2.0",
+    "bytic/utility": "^1.0.73"
+  },
+  "require-dev": {
+    "bytic/phpqatools": "^1.0"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "config": {
+    "allow-plugins": {
+      "phpstan/extension-installer": true,
+      "ergebnis/composer-normalize": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "bytic/phpqatools": true
+    }
+  }
+}
