@@ -6,6 +6,7 @@ namespace Marktic\Settings;
 
 use ByTIC\PackageBase\BaseBootableServiceProvider;
 use Marktic\Settings\Utility\PackageConfig;
+use Marktic\Settings\Utility\PathsHelpers;
 
 class SettingsServiceProvider extends BaseBootableServiceProvider
 {
@@ -29,7 +30,7 @@ class SettingsServiceProvider extends BaseBootableServiceProvider
 
     protected function translationsPath(): ?string
     {
-        return null;
+        return PathsHelpers::lang('/');
     }
 
     public function provides(): array

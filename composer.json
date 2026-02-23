@@ -32,6 +32,10 @@
     "bytic/utility": "^1.0.73"
   },
   "require-dev": {
+    "bytic/view": "^1.0|^2.0",
+    "bytic/form": "^1.0|^2.0",
+    "bytic/controllers": "^1.0|^2.0",
+    "bytic/translation": "^1.0|^2.0",
     "bytic/phpqatools": "^1.0"
   },
   "minimum-stability": "dev",
