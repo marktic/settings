@@ -2,13 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Marktic\Settings\Settings\Adapters;
+namespace Marktic\Settings\Settings\Storages;
 
 use Marktic\Settings\Settings\Dto\SettingDto;
-use Marktic\Settings\Settings\Enums\SettingType;
 use Marktic\Settings\Settings\Mapper\SettingMapper;
 
-class CacheFileAdapter implements SettingAdapterInterface
+class FileStorage implements SettingStorageInterface
 {
     private array $cache = [];
 

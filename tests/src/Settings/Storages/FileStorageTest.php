@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Marktic\Settings\Tests\Settings\Adapters;
+namespace Marktic\Settings\Tests\Settings\Storages;
 
-use Marktic\Settings\Settings\Adapters\CacheFileAdapter;
 use Marktic\Settings\Settings\Dto\SettingDto;
 use Marktic\Settings\Settings\Enums\SettingType;
 use Marktic\Settings\Settings\Mapper\SettingMapper;
+use Marktic\Settings\Settings\Storages\FileStorage;
 use Marktic\Settings\Tests\AbstractTest;
 
-class CacheFileAdapterTest extends AbstractTest
+class FileStorageTest extends AbstractTest
 {
     private string $cacheFile;
-    private CacheFileAdapter $adapter;
+    private FileStorage $storage;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->cacheFile = sys_get_temp_dir() . '/mkt_settings_test_' . uniqid() . '.json';
-        $this->adapter = new CacheFileAdapter($this->cacheFile, new SettingMapper());
+        $this->storage = new FileStorage($this->cacheFile, new SettingMapper());
     }
 
     protected function tearDown(): void
@@ -38,13 +38,13 @@ class CacheFileAdapterTest extends AbstractTest
         $dto->type = SettingType::String;
         $dto->value = 'My Site';
 
-        $saved = $this->adapter->save($dto);
+        $saved = $this->storage->save($dto);
 
         self::assertNotNull($saved->id);
         self::assertNotNull($saved->createdAt);
         self::assertNotNull($saved->updatedAt);
 
-        $found = $this->adapter->find('site.title', 'general');
+        $found = $this->storage->find('site.title', 'general');
 
         self::assertNotNull($found);
         self::assertSame('site.title', $found->name);
@@ -53,7 +53,7 @@ class CacheFileAdapterTest extends AbstractTest
 
     public function testFindReturnsNullForMissing(): void
     {
-        $result = $this->adapter->find('nonexistent', 'default');
+        $result = $this->storage->find('nonexistent', 'default');
         self::assertNull($result);
     }
 
@@ -65,10 +65,10 @@ class CacheFileAdapterTest extends AbstractTest
         $dto->type = SettingType::String;
         $dto->value = 'temp';
 
-        $saved = $this->adapter->save($dto);
-        $this->adapter->delete($saved);
+        $saved = $this->storage->save($dto);
+        $this->storage->delete($saved);
 
-        $found = $this->adapter->find('to.delete', 'default');
+        $found = $this->storage->find('to.delete', 'default');
         self::assertNull($found);
     }
 
@@ -86,13 +86,13 @@ class CacheFileAdapterTest extends AbstractTest
         $dto2->type = SettingType::String;
         $dto2->value = 'value2';
 
-        $this->adapter->save($dto1);
-        $this->adapter->save($dto2);
+        $this->storage->save($dto1);
+        $this->storage->save($dto2);
 
-        $all = $this->adapter->all();
+        $all = $this->storage->all();
         self::assertCount(2, $all);
 
-        $filtered = $this->adapter->all('group_a');
+        $filtered = $this->storage->all('group_a');
         self::assertCount(1, $filtered);
         self::assertSame('setting1', $filtered[0]->name);
     }
@@ -105,13 +105,12 @@ class CacheFileAdapterTest extends AbstractTest
         $dto->type = SettingType::String;
         $dto->value = 'data';
 
-        $this->adapter->save($dto);
+        $this->storage->save($dto);
 
         self::assertFileExists($this->cacheFile);
 
-        // Create a fresh adapter from same file
-        $newAdapter = new CacheFileAdapter($this->cacheFile, new SettingMapper());
-        $found = $newAdapter->find('persistent', 'test');
+        $newStorage = new FileStorage($this->cacheFile, new SettingMapper());
+        $found = $newStorage->find('persistent', 'test');
 
         self::assertNotNull($found);
         self::assertSame('data', $found->value);
@@ -135,14 +134,14 @@ class CacheFileAdapterTest extends AbstractTest
         $dto2->tenantType = 'User';
         $dto2->tenantId = 2;
 
-        $this->adapter->save($dto1);
-        $this->adapter->save($dto2);
+        $this->storage->save($dto1);
+        $this->storage->save($dto2);
 
-        $result = $this->adapter->find('key', 'default', 'User', 1);
+        $result = $this->storage->find('key', 'default', 'User', 1);
         self::assertNotNull($result);
         self::assertSame('tenant1_value', $result->value);
 
-        $all = $this->adapter->all(null, 'User', 1);
+        $all = $this->storage->all(null, 'User', 1);
         self::assertCount(1, $all);
     }
 }

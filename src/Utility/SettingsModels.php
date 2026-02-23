@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Marktic\Settings\Utility;
 
 use ByTIC\PackageBase\Utility\ModelFinder;
-use Marktic\Settings\Settings\Adapters\DatabaseAdapter;
 use Marktic\Settings\Settings\Mapper\SettingMapper;
 use Marktic\Settings\Settings\Models\Settings;
+use Marktic\Settings\Settings\Storages\DatabaseStorage;
 use Nip\Records\RecordManager;
 
 class SettingsModels extends ModelFinder
@@ -24,9 +24,9 @@ class SettingsModels extends ModelFinder
         return static::getConfigVar('models.' . self::SETTINGS, Settings::class);
     }
 
-    public static function createDatabaseAdapter(): DatabaseAdapter
+    public static function createDatabaseStorage(): DatabaseStorage
     {
-        return new DatabaseAdapter(static::settings(), new SettingMapper());
+        return new DatabaseStorage(static::settings(), new SettingMapper());
     }
 
     protected static function packageName(): string

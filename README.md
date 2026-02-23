@@ -8,14 +8,15 @@ A multi-tenant settings management package for PHP 8.2+ applications. Supports t
 
 ## Features
 
-- **Typed settings**: Store values as `string`, `json`, `integer`, `float`, or `boolean` with automatic casting on retrieval
-- **Grouped settings**: Organize settings by logical group names
-- **Multi-tenant support**: Scope settings to any tenant via `tenant_type` + `tenant_id`
-- **DTO-based**: Settings are represented as `SettingDto` objects with typed properties and default values
-- **Mapper**: `SettingMapper` converts between `SettingDto` and database/array representations
-- **Multiple adapters**: Persist settings to a relational database (`DatabaseAdapter`) or a JSON cache file (`CacheFileAdapter`)
-- **Trait-based integration**: Use `HasSettingsRecordTrait` to add setting capabilities to any model
-- **Timestamps**: Every setting tracks `created_at` and `updated_at`
+- **Typed settings**: PHP property types (`string`, `bool`, `int`, `float`, `array`) automatically determine the cast — no manual configuration needed
+- **Class-based settings**: Define settings as plain PHP classes extending `AbstractSettings`; properties with default values are automatically used as fallbacks
+- **Grouped settings**: Each settings class declares its group via `group()`
+- **Multi-tenant support**: Scope settings to any tenant by passing a tenant record to `SettingsManager::get()`
+- **Instance caching**: `SettingsManager::get()` always returns the same object for the same class+tenant combination
+- **Multiple storages**: Persist settings to a relational database (`DatabaseStorage`) or a JSON cache file (`FileStorage`)
+- **Mapper**: `SettingMapper` handles low-level conversion between `SettingDto` and database/array representations
+- **Trait-based integration**: Use `HasSettingsRecordTrait` to add per-model setting capabilities
+- **Timestamps**: Every stored setting entry tracks `created_at` and `updated_at`
 
 ## Installation
 
@@ -40,90 +41,96 @@ php artisan migrate
 
 ## Usage
 
-### Basic Usage with the Database Adapter
+### Defining a Settings Class
 
 ```php
-use Marktic\Settings\Settings\Adapters\DatabaseAdapter;
-use Marktic\Settings\Settings\Dto\SettingDto;
-use Marktic\Settings\Settings\Enums\SettingType;
-use Marktic\Settings\Settings\Mapper\SettingMapper;
-use Marktic\Settings\Utility\SettingsModels;
+use Marktic\Settings\AbstractSettings;
 
-// Get adapter via the model finder
-$adapter = SettingsModels::createDatabaseAdapter();
+class GeneralSettings extends AbstractSettings
+{
+    // PHP property types determine the storage cast automatically:
+    // string → SettingType::String
+    // bool   → SettingType::Boolean
+    // int    → SettingType::Integer
+    // float  → SettingType::Float
+    // array  → SettingType::Json (stored as JSON)
 
-// Create a setting
-$dto = new SettingDto();
-$dto->name = 'site.title';
-$dto->group = 'general';
-$dto->type = SettingType::String;
-$dto->setValue('My Application');
+    public string $site_name = 'My App';
 
-$adapter->save($dto);
+    public bool $site_active = true;
 
-// Retrieve a setting
-$setting = $adapter->find('site.title', 'general');
-echo $setting->getCastValue(); // "My Application"
+    public int $max_items = 20;
+
+    public float $tax_rate = 0.2;
+
+    public array $supported_locales = ['en'];
+
+    // Determines the group used in storage
+    public static function group(): string
+    {
+        return 'general';
+    }
+
+    // Returns the named storage to use, or null for the package default
+    public static function repository(): ?string
+    {
+        return null;
+    }
+}
 ```
 
-### JSON Settings
+### Setting up the SettingsManager
 
 ```php
-$dto = new SettingDto();
-$dto->name = 'features.flags';
-$dto->group = 'app';
-$dto->type = SettingType::Json;
-$dto->setValue(['dark_mode' => true, 'beta' => false]);
+use Marktic\Settings\Settings\Hydrator\SettingsHydrator;
+use Marktic\Settings\Settings\Mapper\SettingMapper;
+use Marktic\Settings\Settings\Storages\DatabaseStorage;
+use Marktic\Settings\Settings\Storages\FileStorage;
+use Marktic\Settings\SettingsManager;
+use Marktic\Settings\Utility\SettingsModels;
 
-$adapter->save($dto);
+// Database storage (requires bytic/orm set up)
+$storage = SettingsModels::createDatabaseStorage();
 
-$setting = $adapter->find('features.flags', 'app');
-$flags = $setting->getCastValue(); // ['dark_mode' => true, 'beta' => false]
+// File storage (no database required)
+$storage = new FileStorage('/path/to/settings.json', new SettingMapper());
+
+$manager = new SettingsManager($storage, new SettingsHydrator());
+
+// Register optional named storages referenced by repository()
+$manager->addStorage('file', new FileStorage('/path/to/file.json', new SettingMapper()));
+```
+
+### Retrieving and Saving Settings
+
+```php
+// Get hydrated settings (default values are used if nothing is stored yet)
+$settings = $manager->get(GeneralSettings::class);
+echo $settings->site_name; // "My App"
+
+// Repeated calls return the SAME object instance
+$settings1 = $manager->get(GeneralSettings::class);
+$settings2 = $manager->get(GeneralSettings::class);
+var_dump($settings1 === $settings2); // true
+
+// Modify and save
+$settings->site_name = 'New Name';
+$settings->max_items = 50;
+$manager->save($settings);
 ```
 
 ### Tenant-Scoped Settings
 
 ```php
-$dto = new SettingDto();
-$dto->name = 'dashboard.theme';
-$dto->group = 'ui';
-$dto->type = SettingType::String;
-$dto->tenantType = 'App\\Models\\Organization';
-$dto->tenantId = 42;
-$dto->setValue('dark');
+use Marktic\Settings\SettingsTenantInterface;
 
-$adapter->save($dto);
-
-// Retrieve for specific tenant
-$setting = $adapter->find('dashboard.theme', 'ui', 'App\\Models\\Organization', 42);
-```
-
-### Cache File Adapter
-
-```php
-use Marktic\Settings\Settings\Adapters\CacheFileAdapter;
-use Marktic\Settings\Settings\Mapper\SettingMapper;
-
-$adapter = new CacheFileAdapter('/path/to/settings.json', new SettingMapper());
-
-$dto = new SettingDto();
-$dto->name = 'maintenance.mode';
-$dto->group = 'system';
-$dto->type = SettingType::Boolean;
-$dto->setValue(false);
-
-$adapter->save($dto);
-```
-
-### Using HasSettingsRecordTrait in a Model
-
-```php
-use Marktic\Settings\ModelsRelated\HasSettings\HasSettingsRecordTrait;
-use Marktic\Settings\Settings\Enums\SettingType;
-
-class Organization extends \Nip\Records\Record
+// Your model can implement SettingsTenantInterface
+class Organization implements SettingsTenantInterface
 {
-    use HasSettingsRecordTrait;
+    public function getSettingTenantType(): string
+    {
+        return static::class;
+    }
 
     public function getSettingTenantId(): string|int|null
     {
@@ -131,46 +138,41 @@ class Organization extends \Nip\Records\Record
     }
 }
 
-$org = Organization::find(1);
+$org = Organization::find(42);
 
-// Store a setting
-$org->setSetting('billing.currency', 'EUR', 'billing', SettingType::String);
+// Each tenant gets its own isolated instance and storage scope
+$tenantSettings = $manager->get(GeneralSettings::class, $org);
+$tenantSettings->site_name = 'Org Site';
 
-// Retrieve a setting value (auto-cast)
-$currency = $org->getSettingValue('billing.currency', 'billing'); // "EUR"
+$manager->save($tenantSettings);
 
-// Get all settings in a group
-$billingSettings = $org->getSettingsByGroup('billing');
+// Another tenant is isolated
+$otherOrg = Organization::find(99);
+$otherSettings = $manager->get(GeneralSettings::class, $otherOrg);
+echo $otherSettings->site_name; // "My App" (its own defaults)
 ```
 
-### DTO Structure
+### Low-level: Using Storages Directly
 
 ```php
+use Marktic\Settings\Settings\Dto\SettingDto;
+use Marktic\Settings\Settings\Enums\SettingType;
+use Marktic\Settings\Settings\Mapper\SettingMapper;
+use Marktic\Settings\Settings\Storages\FileStorage;
+
+$storage = new FileStorage('/path/to/settings.json', new SettingMapper());
+
 $dto = new SettingDto();
-$dto->id;           // ?int — null for new settings
-$dto->name;         // string — setting key, e.g. "site.title"
-$dto->group;        // string — logical group, default: "default"
-$dto->value;        // string — raw stored value
-$dto->type;         // SettingType — determines cast on retrieval
-$dto->tenantType;   // ?string — tenant class/type identifier
-$dto->tenantId;     // string|int|null — tenant identifier
-$dto->createdAt;    // ?\DateTimeImmutable
-$dto->updatedAt;    // ?\DateTimeImmutable
+$dto->name = 'site.title';
+$dto->group = 'general';
+$dto->type = SettingType::String;
+$dto->setValue('My Application');
 
-// Helper methods
-$dto->getCastValue();         // returns the value cast to the proper PHP type
-$dto->setValue(mixed $value); // encodes any PHP value to the raw string representation
+$storage->save($dto);
+
+$found = $storage->find('site.title', 'general');
+echo $found->getCastValue(); // "My Application"
 ```
-
-### SettingType Enum
-
-| Case | Stored As | Cast To |
-|------|-----------|---------|
-| `SettingType::String` | `"string"` | `string` |
-| `SettingType::Json` | `"json"` | `array` (via `json_decode`) |
-| `SettingType::Integer` | `"integer"` | `int` |
-| `SettingType::Float` | `"float"` | `float` |
-| `SettingType::Boolean` | `"boolean"` | `bool` |
 
 ## Database Schema
 
@@ -194,15 +196,19 @@ A unique index on `(name, group, tenant_type, tenant_id)` ensures no duplicate s
 
 ```
 src/
+├── AbstractSettings.php     # Base class for user-defined settings (extend this)
+├── SettingsManager.php      # Manager: get(class, tenant?) with caching + save()
+├── SettingsTenantInterface.php  # Interface for tenant objects
 ├── Settings/
-│   ├── Models/          # ORM Record (Setting) + RecordManager (Settings)
-│   ├── Dto/             # SettingDto — plain value object
-│   ├── Enums/           # SettingType — typed enum with cast/encode
-│   ├── Mapper/          # SettingMapper — DTO ↔ DB / array conversion
-│   └── Adapters/        # SettingAdapterInterface, DatabaseAdapter, CacheFileAdapter
-├── AbstractBase/        # Base Record and Repository classes
-├── ModelsRelated/       # Cross-cutting HasSettings traits
-├── Utility/             # SettingsModels (ModelFinder), PackageConfig
+│   ├── Models/              # ORM Record (Setting) + RecordManager (Settings)
+│   ├── Dto/                 # SettingDto — low-level value object
+│   ├── Enums/               # SettingType — typed enum with cast/encode
+│   ├── Mapper/              # SettingMapper — DTO ↔ DB / array conversion
+│   ├── Hydrator/            # SettingsHydrator — reflection-based property mapping
+│   └── Storages/            # SettingStorageInterface, DatabaseStorage, FileStorage
+├── AbstractBase/            # Base Record and Repository classes
+├── ModelsRelated/           # Cross-cutting HasSettings traits
+├── Utility/                 # SettingsModels (ModelFinder), PackageConfig
 └── SettingsServiceProvider.php
 ```
 

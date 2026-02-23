@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Marktic\Settings\Settings\Adapters;
+namespace Marktic\Settings\Settings\Storages;
 
 use Marktic\Settings\Settings\Dto\SettingDto;
 use Marktic\Settings\Settings\Mapper\SettingMapper;
 use Marktic\Settings\Settings\Models\Settings;
 
-class DatabaseAdapter implements SettingAdapterInterface
+class DatabaseStorage implements SettingStorageInterface
 {
     public function __construct(
         private readonly Settings $repository,

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Marktic\Settings\Settings\Adapters;
+namespace Marktic\Settings\Settings\Storages;
 
 use Marktic\Settings\Settings\Dto\SettingDto;
 
-interface SettingAdapterInterface
+interface SettingStorageInterface
 {
     public function find(
         string $name,

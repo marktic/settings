@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Marktic\Settings\ModelsRelated\HasSettings;
 
-use Marktic\Settings\Settings\Adapters\SettingAdapterInterface;
 use Marktic\Settings\Settings\Dto\SettingDto;
 use Marktic\Settings\Settings\Enums\SettingType;
+use Marktic\Settings\Settings\Storages\SettingStorageInterface;
 use Marktic\Settings\Utility\SettingsModels;
 
 trait HasSettingsRecordTrait
 {
-    private ?SettingAdapterInterface $settingAdapter = null;
+    private ?SettingStorageInterface $settingAdapter = null;
 
     public function getSetting(string $name, string $group = 'default'): ?SettingDto
     {
@@ -57,15 +57,15 @@ trait HasSettingsRecordTrait
 
     abstract public function getSettingTenantId(): string|int|null;
 
-    public function setSettingAdapter(SettingAdapterInterface $adapter): void
+    public function setSettingAdapter(SettingStorageInterface $adapter): void
     {
         $this->settingAdapter = $adapter;
     }
 
-    protected function getSettingAdapter(): SettingAdapterInterface
+    protected function getSettingAdapter(): SettingStorageInterface
     {
         if ($this->settingAdapter === null) {
-            $this->settingAdapter = SettingsModels::createDatabaseAdapter();
+            $this->settingAdapter = SettingsModels::createDatabaseStorage();
         }
 
         return $this->settingAdapter;
