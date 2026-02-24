@@ -54,15 +54,12 @@ trait SettingsControllerTrait
         $form = $this->buildSettingsForm($settings);
 
         if ($form->submited()) {
-            $this->populateSettingsFromForm($settings, $form);
             $this->getSettingsManager()->save($settings);
 
             $this->flashRedirect(
                 translator()->trans('mkt_settings-settings.messages.saved'),
-                'success'
+                current_url(),
             );
-
-            $this->redirect($this->currentUrl());
             return;
         }
 

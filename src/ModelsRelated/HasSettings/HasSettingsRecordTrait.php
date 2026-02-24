@@ -51,7 +51,7 @@ trait HasSettingsRecordTrait
 
     public function getSettingTenantType(): string
     {
-        return static::class;
+        return $this->getManager()->getMorphName();
     }
 
     abstract public function getSettingTenantId(): string|int|null;
