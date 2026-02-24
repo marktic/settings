@@ -14,6 +14,12 @@ use Nip\View\View;
 trait AbstractSettingsControllerTrait
 {
     /**
+     * Returns the current tenant object to scope settings retrieval and persistence.
+     * Return null for global (non-tenanted) settings.
+     */
+    abstract protected function getSettingsTenant(): ?object;
+
+    /**
      * Register view paths for the settings package.
      */
     public function registerViewPaths(View $view): void

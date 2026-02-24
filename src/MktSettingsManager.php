@@ -45,7 +45,7 @@ class MktSettingsManager
         $settings->setTenantContext($tenantType, $tenantId);
 
         $storage = $this->resolveStorage($settingsClass);
-        $dtos = $storage->all($settingsClass::group(), $tenantType, $tenantId);
+        $dtos = $storage->all($settingsClass::group(), $tenantType, $tenantId, $settingsClass::settingsNamespace());
         $this->hydrator->hydrate($settings, $dtos);
 
         $this->instances[$key] = $settings;
@@ -61,7 +61,7 @@ class MktSettingsManager
         $storage = $this->resolveStorage($settings::class);
         $group = $settings::group();
 
-        $existingDtos = $storage->all($group, $settings->getTenantType(), $settings->getTenantId());
+        $existingDtos = $storage->all($group, $settings->getTenantType(), $settings->getTenantId(), $settings::settingsNamespace());
         $dtos = $this->hydrator->extract($settings, $existingDtos);
 
         foreach ($dtos as $dto) {

@@ -31,6 +31,15 @@ trait SettingsControllerTrait
     private ?MktSettingsManager $settingsManager = null;
 
     /**
+     * Returns the current tenant for settings scoping.
+     * Override in the concrete controller to provide a tenant object.
+     */
+    protected function getSettingsTenant(): ?object
+    {
+        return null;
+    }
+
+    /**
      * Default index action — renders a list of available settings groups.
      * Override in the concrete controller to add group links as needed.
      */
@@ -50,7 +59,7 @@ trait SettingsControllerTrait
      */
     protected function handleSettingsGroup(string $settingsClass): void
     {
-        $settings = $this->getSettingsManager()->get($settingsClass);
+        $settings = $this->getSettingsManager()->get($settingsClass, $this->getSettingsTenant());
 
         $form = $this->buildSettingsForm($settings);
 

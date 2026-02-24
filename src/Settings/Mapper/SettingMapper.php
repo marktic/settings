@@ -17,6 +17,7 @@ class SettingMapper
         $dto->id = $record->id ? (int) $record->id : null;
         $dto->name = (string) $record->name;
         $dto->group = (string) ($record->group ?? 'default');
+        $dto->namespace = $record->namespace ?? null;
         $dto->value = (string) ($record->value ?? '');
         $dto->type = SettingType::from($record->type ?? 'string');
         $dto->tenantType = $record->tenant_type;
@@ -44,6 +45,7 @@ class SettingMapper
 
         $record->name = $dto->name;
         $record->group = $dto->group;
+        $record->namespace = $dto->namespace;
         $record->value = $dto->value;
         $record->type = $dto->type->value;
         $record->tenant_type = $dto->tenantType;
@@ -58,6 +60,7 @@ class SettingMapper
         $dto->id = isset($data['id']) ? (int) $data['id'] : null;
         $dto->name = (string) ($data['name'] ?? '');
         $dto->group = (string) ($data['group'] ?? 'default');
+        $dto->namespace = $data['namespace'] ?? null;
         $dto->value = (string) ($data['value'] ?? '');
         $dto->type = SettingType::from($data['type'] ?? 'string');
         $dto->tenantType = $data['tenant_type'] ?? null;
@@ -79,6 +82,7 @@ class SettingMapper
             'id' => $dto->id,
             'name' => $dto->name,
             'group' => $dto->group,
+            'namespace' => $dto->namespace,
             'value' => $dto->value,
             'type' => $dto->type->value,
             'tenant_type' => $dto->tenantType,

@@ -20,7 +20,8 @@ class DatabaseStorage implements SettingStorageInterface
         string $name,
         string $group = 'default',
         ?string $tenantType = null,
-        string|int|null $tenantId = null
+        string|int|null $tenantId = null,
+        ?string $namespace = null
     ): ?SettingDto {
         $params = [
             'where' => [
@@ -28,6 +29,10 @@ class DatabaseStorage implements SettingStorageInterface
                 ['`group` = ?', $group],
             ],
         ];
+
+        if ($namespace !== null) {
+            $params['where'][] = ['namespace = ?', $namespace];
+        }
 
         if ($tenantType !== null) {
             $params['where'][] = ['tenant_type = ?', $tenantType];
@@ -76,12 +81,17 @@ class DatabaseStorage implements SettingStorageInterface
     public function all(
         ?string $group = null,
         ?string $tenantType = null,
-        string|int|null $tenantId = null
+        string|int|null $tenantId = null,
+        ?string $namespace = null
     ): array {
         $params = ['where' => []];
 
         if ($group !== null) {
             $params['where'][] = ['`group` = ?', $group];
+        }
+
+        if ($namespace !== null) {
+            $params['where'][] = ['namespace = ?', $namespace];
         }
 
         if ($tenantType !== null) {

@@ -12,7 +12,8 @@ interface SettingStorageInterface
         string $name,
         string $group = 'default',
         ?string $tenantType = null,
-        string|int|null $tenantId = null
+        string|int|null $tenantId = null,
+        ?string $namespace = null
     ): ?SettingDto;
 
     public function save(SettingDto $dto): SettingDto;
@@ -25,6 +26,7 @@ interface SettingStorageInterface
     public function all(
         ?string $group = null,
         ?string $tenantType = null,
-        string|int|null $tenantId = null
+        string|int|null $tenantId = null,
+        ?string $namespace = null
     ): array;
 }

@@ -10,7 +10,10 @@ use Marktic\Settings\Settings\Mapper\SettingMapper;
 use Marktic\Settings\Settings\Storages\FileStorage;
 use Marktic\Settings\MktSettingsManager;
 use Marktic\Settings\SettingsTenantInterface;
+use Marktic\Settings\Tests\Fixtures\Settings\AutoDerivedSettings;
 use Marktic\Settings\Tests\Fixtures\Settings\GeneralSettings;
+use Marktic\Settings\Tests\Fixtures\Settings\NameOverrideSettings;
+use Marktic\Settings\Tests\Fixtures\Settings\NamespacedSettings;
 use Marktic\Settings\Tests\Fixtures\Settings\TenantSettings;
 
 class SettingsManagerTest extends AbstractTest
@@ -174,6 +177,51 @@ class SettingsManagerTest extends AbstractTest
                 unlink($altFile);
             }
         }
+    }
+
+    public function testAutoDerivedGroupSaveAndReload(): void
+    {
+        $settings = $this->manager->get(AutoDerivedSettings::class);
+        $settings->color = 'red';
+        $this->manager->save($settings);
+
+        $freshManager = new MktSettingsManager($this->storage, new SettingsHydrator());
+        $reloaded = $freshManager->get(AutoDerivedSettings::class);
+
+        self::assertSame('red', $reloaded->color);
+    }
+
+    public function testNameConstOverridesGroupInStorage(): void
+    {
+        $settings = $this->manager->get(NameOverrideSettings::class);
+        $settings->title = 'New Title';
+        $this->manager->save($settings);
+
+        $found = $this->storage->find('title', 'custom_group');
+        self::assertNotNull($found);
+        self::assertSame('New Title', $found->value);
+    }
+
+    public function testNamespacedSettingsSaveAndReload(): void
+    {
+        $settings = $this->manager->get(NamespacedSettings::class);
+        $settings->mode = 'debug';
+        $this->manager->save($settings);
+
+        $freshManager = new MktSettingsManager($this->storage, new SettingsHydrator());
+        $reloaded = $freshManager->get(NamespacedSettings::class);
+
+        self::assertSame('debug', $reloaded->mode);
+    }
+
+    public function testNamespacedSettingsDtoHasNamespace(): void
+    {
+        $settings = $this->manager->get(NamespacedSettings::class);
+        $this->manager->save($settings);
+
+        $found = $this->storage->find('mode', 'namespaced', null, null, 'mymodule');
+        self::assertNotNull($found);
+        self::assertSame('mymodule', $found->namespace);
     }
 
     private function createTenant(string $type, int $id): object

@@ -23,10 +23,11 @@ class FileStorage implements SettingStorageInterface
         string $name,
         string $group = 'default',
         ?string $tenantType = null,
-        string|int|null $tenantId = null
+        string|int|null $tenantId = null,
+        ?string $namespace = null
     ): ?SettingDto {
         $this->load();
-        $key = $this->buildKey($name, $group, $tenantType, $tenantId);
+        $key = $this->buildKey($name, $group, $tenantType, $tenantId, $namespace);
 
         if (!isset($this->cache[$key])) {
             return null;
@@ -45,7 +46,7 @@ class FileStorage implements SettingStorageInterface
         }
         $dto->updatedAt = new \DateTimeImmutable();
 
-        $key = $this->buildKey($dto->name, $dto->group, $dto->tenantType, $dto->tenantId);
+        $key = $this->buildKey($dto->name, $dto->group, $dto->tenantType, $dto->tenantId, $dto->namespace);
         $this->cache[$key] = $this->mapper->toArray($dto);
         $this->persist();
 
@@ -55,7 +56,7 @@ class FileStorage implements SettingStorageInterface
     public function delete(SettingDto $dto): void
     {
         $this->load();
-        $key = $this->buildKey($dto->name, $dto->group, $dto->tenantType, $dto->tenantId);
+        $key = $this->buildKey($dto->name, $dto->group, $dto->tenantType, $dto->tenantId, $dto->namespace);
         unset($this->cache[$key]);
         $this->persist();
     }
@@ -63,7 +64,8 @@ class FileStorage implements SettingStorageInterface
     public function all(
         ?string $group = null,
         ?string $tenantType = null,
-        string|int|null $tenantId = null
+        string|int|null $tenantId = null,
+        ?string $namespace = null
     ): array {
         $this->load();
 
@@ -72,6 +74,9 @@ class FileStorage implements SettingStorageInterface
             $dto = $this->mapper->fromArray($data);
 
             if ($group !== null && $dto->group !== $group) {
+                continue;
+            }
+            if ($namespace !== null && $dto->namespace !== $namespace) {
                 continue;
             }
             if ($tenantType !== null && $dto->tenantType !== $tenantType) {
@@ -91,9 +96,10 @@ class FileStorage implements SettingStorageInterface
         string $name,
         string $group,
         ?string $tenantType,
-        string|int|null $tenantId
+        string|int|null $tenantId,
+        ?string $namespace = null
     ): string {
-        return implode('|', [$group, $name, $tenantType ?? '', (string) ($tenantId ?? '')]);
+        return implode('|', [$namespace ?? '', $group, $name, $tenantType ?? '', (string) ($tenantId ?? '')]);
     }
 
     private function load(): void
