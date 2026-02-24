@@ -16,7 +16,7 @@ class MktSettingsServiceProvider extends BaseBootableServiceProvider
     {
         parent::boot();
 
-        \Marktic\Settings\Utility\MktSettingsModels::settings();
+//        \Marktic\Settings\Utility\MktSettingsModels::settings();
     }
 
     public function migrations(): ?string

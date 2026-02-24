@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Marktic\Settings\Settings\Models;
 
 use Marktic\Settings\AbstractBase\Models\SettingsRepository;
+use Marktic\Settings\Utility\MktSettingsModels;
+use Marktic\Settings\Utility\PackageConfig;
 
 /**
  * Class Settings
@@ -35,5 +37,10 @@ class Settings extends SettingsRepository
             $params['where'][] = ['group = ?', $group];
         }
         return $this->findAll($params)->toArray();
+    }
+
+    protected function generateTable(): string
+    {
+        return PackageConfig::tableName(MktSettingsModels::SETTINGS, Settings::TABLE);
     }
 }
