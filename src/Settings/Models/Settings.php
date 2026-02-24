@@ -18,7 +18,7 @@ class Settings extends SettingsRepository
 {
     public const TABLE = 'mkt_settings-settings';
 
-    public const CONTROLLER = 'mkt-settings-settings';
+    public const CONTROLLER = 'mkt_settings-settings';
 
     public function getModelNamespace(): string
     {

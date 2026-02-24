@@ -81,11 +81,16 @@ trait SettingsControllerTrait
      */
     protected function buildSettingsForm(AbstractSettings $settings): DetailsForm
     {
-        $form = new DetailsForm();
+        $formClass = $this->generateSettingsFormClass();
+        $form = new $formClass();
         $form->setSettings($settings);
-        $form->initialize();
 
         return $form;
+    }
+
+    protected function generateSettingsFormClass()
+    {
+        return DetailsForm::class;
     }
 
     /**
