@@ -14,6 +14,8 @@ class SettingDto
 
     public string $group = 'default';
 
+    public ?string $namespace = null;
+
     public string $value = '';
 
     public SettingType $type = SettingType::String;

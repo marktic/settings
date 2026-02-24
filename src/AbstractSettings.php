@@ -12,8 +12,38 @@ abstract class AbstractSettings
 
     /**
      * Returns the group name used to scope this settings class in storage.
+     *
+     * Defaults to a snake_case version of the short class name with the
+     * "Settings" suffix removed (e.g. GeneralSettings → "general").
+     * Define a NAME class constant to override this value.
      */
-    abstract public static function group(): string;
+    public static function group(): string
+    {
+        if (defined(static::class . '::NAME')) {
+            return constant(static::class . '::NAME');
+        }
+
+        $class = static::class;
+        $pos = strrpos($class, '\\');
+        $shortName = $pos !== false ? substr($class, $pos + 1) : $class;
+        $name = preg_replace('/Settings$/', '', $shortName) ?: $shortName;
+
+        return strtolower(preg_replace('/[A-Z]/', '_$0', lcfirst($name)));
+    }
+
+    /**
+     * Returns the namespace used to scope this settings class in storage.
+     *
+     * Returns null by default. Define a NAMESPACE class constant to set a value.
+     */
+    public static function settingsNamespace(): ?string
+    {
+        if (defined(static::class . '::NAMESPACE')) {
+            return constant(static::class . '::NAMESPACE');
+        }
+
+        return null;
+    }
 
     /**
      * Returns the repository/storage key to use for this settings class.

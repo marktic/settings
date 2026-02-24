@@ -65,6 +65,7 @@ class SettingsHydrator
                 $dto = new SettingDto();
                 $dto->name = $name;
                 $dto->group = $settings::group();
+                $dto->namespace = $settings::settingsNamespace();
                 $dto->type = $type;
                 $dto->tenantType = $settings->getTenantType();
                 $dto->tenantId = $settings->getTenantId();

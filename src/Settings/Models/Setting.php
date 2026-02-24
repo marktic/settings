@@ -14,6 +14,7 @@ use Marktic\Settings\Settings\Enums\SettingType;
  * @property int $id
  * @property string $name
  * @property string $group
+ * @property string|null $namespace
  * @property string $value
  * @property string $type
  * @property string|null $tenant_type
@@ -26,6 +27,8 @@ class Setting extends SettingsRecord
     public ?string $name = null;
 
     public ?string $group = 'default';
+
+    public ?string $namespace = null;
 
     public ?string $value = null;
 
