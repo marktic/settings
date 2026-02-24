@@ -8,7 +8,7 @@ final class CreateMktSettingsTable extends AbstractMigration
 {
     public function change(): void
     {
-        $tableName = 'mkt_settings';
+        $tableName = 'mkt_settings-settings';
 
         if ($this->hasTable($tableName)) {
             return;

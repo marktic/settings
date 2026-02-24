@@ -16,9 +16,9 @@ use Marktic\Settings\Utility\PackageConfig;
  */
 class Settings extends SettingsRepository
 {
-    public const TABLE = 'mkt_settings';
+    public const TABLE = 'mkt_settings-settings';
 
-    public const CONTROLLER = 'mkt-settings';
+    public const CONTROLLER = 'mkt-settings-settings';
 
     public function getModelNamespace(): string
     {
