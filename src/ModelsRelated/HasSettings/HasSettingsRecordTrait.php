@@ -7,7 +7,7 @@ namespace Marktic\Settings\ModelsRelated\HasSettings;
 use Marktic\Settings\Settings\Dto\SettingDto;
 use Marktic\Settings\Settings\Enums\SettingType;
 use Marktic\Settings\Settings\Storages\SettingStorageInterface;
-use Marktic\Settings\Utility\SettingsModels;
+use Marktic\Settings\Utility\MktSettingsModels;
 
 trait HasSettingsRecordTrait
 {
@@ -65,7 +65,7 @@ trait HasSettingsRecordTrait
     protected function getSettingAdapter(): SettingStorageInterface
     {
         if ($this->settingAdapter === null) {
-            $this->settingAdapter = SettingsModels::createDatabaseStorage();
+            $this->settingAdapter = MktSettingsModels::createDatabaseStorage();
         }
 
         return $this->settingAdapter;

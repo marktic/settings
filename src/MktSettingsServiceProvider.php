@@ -8,7 +8,7 @@ use ByTIC\PackageBase\BaseBootableServiceProvider;
 use Marktic\Settings\Utility\PackageConfig;
 use Marktic\Settings\Utility\PathsHelpers;
 
-class SettingsServiceProvider extends BaseBootableServiceProvider
+class MktSettingsServiceProvider extends BaseBootableServiceProvider
 {
     public const NAME = 'mkt_settings';
 
@@ -16,7 +16,7 @@ class SettingsServiceProvider extends BaseBootableServiceProvider
     {
         parent::boot();
 
-        \Marktic\Settings\Utility\SettingsModels::settings();
+        \Marktic\Settings\Utility\MktSettingsModels::settings();
     }
 
     public function migrations(): ?string

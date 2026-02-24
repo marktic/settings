@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Marktic\Settings\Utility;
 
-use Marktic\Settings\SettingsServiceProvider;
+use Marktic\Settings\MktSettingsServiceProvider;
 use Nip\Utility\Traits\SingletonTrait;
 
 class PackageConfig extends \ByTIC\PackageBase\Utility\PackageConfig
 {
     use SingletonTrait;
 
-    protected $name = SettingsServiceProvider::NAME;
+    protected $name = MktSettingsServiceProvider::NAME;
 
     public static function configPath(): string
     {

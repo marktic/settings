@@ -8,7 +8,7 @@ use Marktic\Settings\Settings\Enums\SettingType;
 use Marktic\Settings\Settings\Hydrator\SettingsHydrator;
 use Marktic\Settings\Settings\Mapper\SettingMapper;
 use Marktic\Settings\Settings\Storages\FileStorage;
-use Marktic\Settings\SettingsManager;
+use Marktic\Settings\MktSettingsManager;
 use Marktic\Settings\SettingsTenantInterface;
 use Marktic\Settings\Tests\Fixtures\Settings\GeneralSettings;
 use Marktic\Settings\Tests\Fixtures\Settings\TenantSettings;
@@ -17,14 +17,14 @@ class SettingsManagerTest extends AbstractTest
 {
     private string $cacheFile;
     private FileStorage $storage;
-    private SettingsManager $manager;
+    private MktSettingsManager $manager;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->cacheFile = sys_get_temp_dir() . '/mkt_settings_manager_test_' . uniqid() . '.json';
         $this->storage = new FileStorage($this->cacheFile, new SettingMapper());
-        $this->manager = new SettingsManager($this->storage, new SettingsHydrator());
+        $this->manager = new MktSettingsManager($this->storage, new SettingsHydrator());
     }
 
     protected function tearDown(): void
@@ -64,7 +64,7 @@ class SettingsManagerTest extends AbstractTest
         $this->manager->save($settings);
 
         // Fresh manager from same storage to simulate reload
-        $freshManager = new SettingsManager($this->storage, new SettingsHydrator());
+        $freshManager = new MktSettingsManager($this->storage, new SettingsHydrator());
         $reloaded = $freshManager->get(GeneralSettings::class);
 
         self::assertSame('New Name', $reloaded->site_name);
@@ -80,7 +80,7 @@ class SettingsManagerTest extends AbstractTest
 
         $this->manager->save($settings);
 
-        $freshManager = new SettingsManager($this->storage, new SettingsHydrator());
+        $freshManager = new MktSettingsManager($this->storage, new SettingsHydrator());
         $reloaded = $freshManager->get(GeneralSettings::class);
 
         self::assertFalse($reloaded->site_active);
@@ -117,7 +117,7 @@ class SettingsManagerTest extends AbstractTest
         $settings->theme = 'dark';
         $this->manager->save($settings);
 
-        $freshManager = new SettingsManager($this->storage, new SettingsHydrator());
+        $freshManager = new MktSettingsManager($this->storage, new SettingsHydrator());
         $reloaded = $freshManager->get(TenantSettings::class, $tenant);
 
         self::assertSame('dark', $reloaded->theme);
@@ -136,7 +136,7 @@ class SettingsManagerTest extends AbstractTest
         $s2->theme = 'light';
         $this->manager->save($s2);
 
-        $freshManager = new SettingsManager($this->storage, new SettingsHydrator());
+        $freshManager = new MktSettingsManager($this->storage, new SettingsHydrator());
         $r1 = $freshManager->get(TenantSettings::class, $tenant1);
         $r2 = $freshManager->get(TenantSettings::class, $tenant2);
 

@@ -7,8 +7,8 @@ namespace Marktic\Settings\Bundle\Modules\Admin\Controllers;
 use Marktic\Settings\AbstractSettings;
 use Marktic\Settings\Bundle\Modules\Admin\Forms\Settings\DetailsForm;
 use Marktic\Settings\Settings\Hydrator\SettingsHydrator;
-use Marktic\Settings\SettingsManager;
-use Marktic\Settings\Utility\SettingsModels;
+use Marktic\Settings\MktSettingsManager;
+use Marktic\Settings\Utility\MktSettingsModels;
 use Nip\Controllers\Response\ResponsePayload;
 
 /**
@@ -28,7 +28,7 @@ trait SettingsControllerTrait
 {
     use AbstractSettingsControllerTrait;
 
-    private ?SettingsManager $settingsManager = null;
+    private ?MktSettingsManager $settingsManager = null;
 
     /**
      * Default index action — renders a list of available settings groups.
@@ -121,11 +121,11 @@ trait SettingsControllerTrait
         }
     }
 
-    protected function getSettingsManager(): SettingsManager
+    protected function getSettingsManager(): MktSettingsManager
     {
         if ($this->settingsManager === null) {
-            $this->settingsManager = new SettingsManager(
-                SettingsModels::createDatabaseStorage(),
+            $this->settingsManager = new MktSettingsManager(
+                MktSettingsModels::createDatabaseStorage(),
                 new SettingsHydrator()
             );
         }

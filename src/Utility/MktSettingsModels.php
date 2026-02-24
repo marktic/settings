@@ -10,7 +10,7 @@ use Marktic\Settings\Settings\Models\Settings;
 use Marktic\Settings\Settings\Storages\DatabaseStorage;
 use Nip\Records\RecordManager;
 
-class SettingsModels extends ModelFinder
+class MktSettingsModels extends ModelFinder
 {
     public const SETTINGS = 'settings';
 
@@ -31,6 +31,6 @@ class SettingsModels extends ModelFinder
 
     protected static function packageName(): string
     {
-        return \Marktic\Settings\SettingsServiceProvider::NAME;
+        return \Marktic\Settings\MktSettingsServiceProvider::NAME;
     }
 }

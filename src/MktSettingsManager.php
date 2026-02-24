@@ -7,7 +7,7 @@ namespace Marktic\Settings;
 use Marktic\Settings\Settings\Hydrator\SettingsHydrator;
 use Marktic\Settings\Settings\Storages\SettingStorageInterface;
 
-class SettingsManager
+class MktSettingsManager
 {
     /** @var array<string, AbstractSettings> */
     private array $instances = [];

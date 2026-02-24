@@ -1,14 +1,14 @@
 <?php
 
 use Marktic\Settings\Settings\Models\Settings;
-use Marktic\Settings\Utility\SettingsModels;
+use Marktic\Settings\Utility\MktSettingsModels;
 
 return [
     'models' => [
-        SettingsModels::SETTINGS => Settings::class,
+        MktSettingsModels::SETTINGS => Settings::class,
     ],
     'tables' => [
-        SettingsModels::SETTINGS => Settings::TABLE,
+        MktSettingsModels::SETTINGS => Settings::TABLE,
     ],
     'database' => [
         'connection' => 'default',

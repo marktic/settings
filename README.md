@@ -29,7 +29,7 @@ Register the service provider (if not using auto-discovery):
 ```php
 // config/app.php (Laravel)
 'providers' => [
-    Marktic\Settings\SettingsServiceProvider::class,
+    Marktic\Settings\MktSettingsServiceProvider::class,
 ],
 ```
 
@@ -86,16 +86,16 @@ use Marktic\Settings\Settings\Hydrator\SettingsHydrator;
 use Marktic\Settings\Settings\Mapper\SettingMapper;
 use Marktic\Settings\Settings\Storages\DatabaseStorage;
 use Marktic\Settings\Settings\Storages\FileStorage;
-use Marktic\Settings\SettingsManager;
-use Marktic\Settings\Utility\SettingsModels;
+use Marktic\Settings\MktSettingsManager;
+use Marktic\Settings\Utility\MktSettingsModels;
 
 // Database storage (requires bytic/orm set up)
-$storage = SettingsModels::createDatabaseStorage();
+$storage = MktSettingsModels::createDatabaseStorage();
 
 // File storage (no database required)
 $storage = new FileStorage('/path/to/settings.json', new SettingMapper());
 
-$manager = new SettingsManager($storage, new SettingsHydrator());
+$manager = new MktSettingsManager($storage, new SettingsHydrator());
 
 // Register optional named storages referenced by repository()
 $manager->addStorage('file', new FileStorage('/path/to/file.json', new SettingMapper()));
