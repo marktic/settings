@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Marktic\Settings\Tests;
 
-use Marktic\Settings\Settings\Enums\SettingType;
-use Marktic\Settings\Settings\Hydrator\SettingsHydrator;
-use Marktic\Settings\Settings\Mapper\SettingMapper;
-use Marktic\Settings\Settings\Storages\FileStorage;
+use Marktic\Settings\Hydrator\SettingsHydrator;
+use Marktic\Settings\Mapper\SettingMapper;
 use Marktic\Settings\MktSettingsManager;
 use Marktic\Settings\SettingsTenantInterface;
+use Marktic\Settings\Storages\FileStorage;
 use Marktic\Settings\Tests\Fixtures\Settings\AutoDerivedSettings;
 use Marktic\Settings\Tests\Fixtures\Settings\GeneralSettings;
 use Marktic\Settings\Tests\Fixtures\Settings\NameOverrideSettings;

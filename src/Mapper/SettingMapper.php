@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Marktic\Settings\Settings\Mapper;
+namespace Marktic\Settings\Mapper;
 
 use Marktic\Settings\Settings\Dto\SettingDto;
 use Marktic\Settings\Settings\Enums\SettingType;
 use Marktic\Settings\Settings\Models\Setting;
-use Marktic\Settings\Settings\Models\Settings;
 
 class SettingMapper
 {

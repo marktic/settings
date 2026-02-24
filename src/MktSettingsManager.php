@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Marktic\Settings;
 
-use Marktic\Settings\Settings\Hydrator\SettingsHydrator;
-use Marktic\Settings\Settings\Storages\SettingStorageInterface;
+use Marktic\Settings\Hydrator\SettingsHydrator;
+use Marktic\Settings\Storages\SettingStorageInterface;
 
 class MktSettingsManager
 {
@@ -109,7 +109,9 @@ class MktSettingsManager
             return [$tenant->getSettingTenantType(), $tenant->getSettingTenantId()];
         }
 
-        return [get_class($tenant), property_exists($tenant, 'id') ? $tenant->id : null];
+        $tenantName = method_exists($tenant, 'getManager') ? $tenant->getManager()->getMorphName() : get_class($tenant);
+
+        return [$tenantName, property_exists($tenant, 'id') ? $tenant->id : null];
     }
 
     private function buildInstanceKey(

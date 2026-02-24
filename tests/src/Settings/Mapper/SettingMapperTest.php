@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Marktic\Settings\Tests\Settings\Mapper;
 
+use Marktic\Settings\Mapper\SettingMapper;
 use Marktic\Settings\Settings\Dto\SettingDto;
 use Marktic\Settings\Settings\Enums\SettingType;
-use Marktic\Settings\Settings\Mapper\SettingMapper;
 use Marktic\Settings\Settings\Models\Setting;
 use Marktic\Settings\Tests\AbstractTest;
 

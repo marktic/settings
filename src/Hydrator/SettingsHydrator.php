@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Marktic\Settings\Settings\Hydrator;
+namespace Marktic\Settings\Hydrator;
 
 use Marktic\Settings\AbstractSettings;
 use Marktic\Settings\Settings\Dto\SettingDto;

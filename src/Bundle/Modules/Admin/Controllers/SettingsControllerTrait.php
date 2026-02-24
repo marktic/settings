@@ -6,9 +6,8 @@ namespace Marktic\Settings\Bundle\Modules\Admin\Controllers;
 
 use Marktic\Settings\AbstractSettings;
 use Marktic\Settings\Bundle\Modules\Admin\Forms\Settings\DetailsForm;
-use Marktic\Settings\Settings\Hydrator\SettingsHydrator;
 use Marktic\Settings\MktSettingsManager;
-use Marktic\Settings\Utility\MktSettingsModels;
+use Marktic\Settings\Utility\MktSettings;
 use Nip\Controllers\Response\ResponsePayload;
 
 /**
@@ -29,15 +28,6 @@ trait SettingsControllerTrait
     use AbstractSettingsControllerTrait;
 
     private ?MktSettingsManager $settingsManager = null;
-
-    /**
-     * Returns the current tenant for settings scoping.
-     * Override in the concrete controller to provide a tenant object.
-     */
-    protected function getSettingsTenant(): ?object
-    {
-        return null;
-    }
 
     /**
      * Default index action — renders a list of available settings groups.
@@ -67,7 +57,7 @@ trait SettingsControllerTrait
             $this->populateSettingsFromForm($settings, $form);
             $this->getSettingsManager()->save($settings);
 
-            $this->flashMessage(
+            $this->flashRedirect(
                 translator()->trans('mkt_settings-settings.messages.saved'),
                 'success'
             );
@@ -102,48 +92,11 @@ trait SettingsControllerTrait
         return DetailsForm::class;
     }
 
-    /**
-     * Populates settings properties from submitted form values.
-     */
-    protected function populateSettingsFromForm(AbstractSettings $settings, DetailsForm $form): void
-    {
-        $reflection = new \ReflectionClass($settings);
-
-        foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
-            if ($property->isStatic()) {
-                continue;
-            }
-
-            $name = $property->getName();
-            $element = $form->getElement($name);
-
-            if ($element === null) {
-                continue;
-            }
-
-            $rawValue = $element->getValue();
-            $type = $property->getType();
-            $typeName = $type instanceof \ReflectionNamedType ? $type->getName() : 'string';
-
-            $property->setValue($settings, match ($typeName) {
-                'bool' => (bool) filter_var($rawValue, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
-                'int' => (int) $rawValue,
-                'float' => (float) $rawValue,
-                'array' => is_array($rawValue) ? $rawValue : (array) json_decode((string) $rawValue, true),
-                default => (string) $rawValue,
-            });
-        }
-    }
-
     protected function getSettingsManager(): MktSettingsManager
     {
         if ($this->settingsManager === null) {
-            $this->settingsManager = new MktSettingsManager(
-                MktSettingsModels::createDatabaseStorage(),
-                new SettingsHydrator()
-            );
+            $this->settingsManager = MktSettings::manager();
         }
-
         return $this->settingsManager;
     }
 }

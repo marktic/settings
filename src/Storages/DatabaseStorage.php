@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Marktic\Settings\Settings\Storages;
+namespace Marktic\Settings\Storages;
 
+use Marktic\Settings\Mapper\SettingMapper;
 use Marktic\Settings\Settings\Dto\SettingDto;
-use Marktic\Settings\Settings\Mapper\SettingMapper;
 use Marktic\Settings\Settings\Models\Settings;
 
 class DatabaseStorage implements SettingStorageInterface

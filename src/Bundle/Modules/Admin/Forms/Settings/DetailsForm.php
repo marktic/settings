@@ -21,6 +21,11 @@ class DetailsForm extends FormModel
         return $this->settings;
     }
 
+    public function getModel()
+    {
+        return $this->getSettings();
+    }
+
     public function initialize()
     {
         parent::initialize();
@@ -76,6 +81,36 @@ class DetailsForm extends FormModel
                     $this->getElement($name)->setValue((string) $currentValue);
                 }
                 break;
+        }
+    }
+    public function saveToModel()
+    {
+        $settings = $this->getSettings();
+        $reflection = new \ReflectionClass($settings);
+
+        foreach ($reflection->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+            if ($property->isStatic()) {
+                continue;
+            }
+
+            $name = $property->getName();
+            $element = $this->getElement($name);
+
+            if ($element === null) {
+                continue;
+            }
+
+            $rawValue = $element->getValue();
+            $type = $property->getType();
+            $typeName = $type instanceof \ReflectionNamedType ? $type->getName() : 'string';
+
+            $property->setValue($settings, match ($typeName) {
+                'bool' => (bool) filter_var($rawValue, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
+                'int' => (int) $rawValue,
+                'float' => (float) $rawValue,
+                'array' => is_array($rawValue) ? $rawValue : (array) json_decode((string) $rawValue, true),
+                default => (string) $rawValue,
+            });
         }
     }
 }

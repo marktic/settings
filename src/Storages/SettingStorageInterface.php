@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Marktic\Settings\Settings\Storages;
+namespace Marktic\Settings\Storages;
 
 use Marktic\Settings\Settings\Dto\SettingDto;
 

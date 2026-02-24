@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Marktic\Settings;
 
+use Marktic\Settings\Utility\MktSettings;
+
 abstract class AbstractSettings
 {
     private ?string $tenantType = null;
@@ -69,5 +71,11 @@ abstract class AbstractSettings
     {
         $this->tenantType = $tenantType;
         $this->tenantId = $tenantId;
+    }
+
+    public function save(): static
+    {
+        MktSettings::manager()->save($this);
+        return $this;
     }
 }

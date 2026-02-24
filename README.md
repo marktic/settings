@@ -82,12 +82,7 @@ class GeneralSettings extends AbstractSettings
 ### Setting up the SettingsManager
 
 ```php
-use Marktic\Settings\Settings\Hydrator\SettingsHydrator;
-use Marktic\Settings\Settings\Mapper\SettingMapper;
-use Marktic\Settings\Settings\Storages\DatabaseStorage;
-use Marktic\Settings\Settings\Storages\FileStorage;
-use Marktic\Settings\MktSettingsManager;
-use Marktic\Settings\Utility\MktSettingsModels;
+use Marktic\Settings\Hydrator\SettingsHydrator;use Marktic\Settings\Mapper\SettingMapper;use Marktic\Settings\MktSettingsManager;use Marktic\Settings\Storages\FileStorage;use Marktic\Settings\Utility\MktSettingsModels;
 
 // Database storage (requires bytic/orm set up)
 $storage = MktSettingsModels::createDatabaseStorage();
@@ -155,10 +150,7 @@ echo $otherSettings->site_name; // "My App" (its own defaults)
 ### Low-level: Using Storages Directly
 
 ```php
-use Marktic\Settings\Settings\Dto\SettingDto;
-use Marktic\Settings\Settings\Enums\SettingType;
-use Marktic\Settings\Settings\Mapper\SettingMapper;
-use Marktic\Settings\Settings\Storages\FileStorage;
+use Marktic\Settings\Mapper\SettingMapper;use Marktic\Settings\Settings\Dto\SettingDto;use Marktic\Settings\Settings\Enums\SettingType;use Marktic\Settings\Storages\FileStorage;
 
 $storage = new FileStorage('/path/to/settings.json', new SettingMapper());
 
