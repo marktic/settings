@@ -23,10 +23,10 @@ class SettingMapper
         $dto->tenantId = $record->tenant_id;
 
         if ($record->created_at) {
-            $dto->createdAt = new \DateTimeImmutable($record->created_at);
+            $dto->createdAt = $record->created_at->toDateTimeImmutable();
         }
         if ($record->updated_at) {
-            $dto->updatedAt = new \DateTimeImmutable($record->updated_at);
+            $dto->updatedAt = $record->updated_at->toDateTimeImmutable();
         }
 
         return $dto;

@@ -67,6 +67,7 @@ class DetailsForm extends FormModel
                 $this->addCheckbox($name, $label);
                 if ($currentValue) {
                     $this->getElement($name)->setValue('1');
+                    $this->getElement($name)->setChecked(true);
                 }
                 break;
 
