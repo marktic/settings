@@ -53,7 +53,7 @@ trait SettingsControllerTrait
 
         $form = $this->buildSettingsForm($settings);
 
-        if ($form->submited()) {
+        if ($form->execute()) {
             $this->getSettingsManager()->save($settings);
 
             $this->flashRedirect(

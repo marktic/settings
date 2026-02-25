@@ -51,7 +51,7 @@ class DatabaseStorage implements SettingStorageInterface
     {
         $record = null;
         if ($dto->id !== null) {
-            $record = $this->repository->findById($dto->id);
+            $record = $this->repository->findOne($dto->id);
         }
 
         $record = $this->mapper->toRecord($dto, $record);

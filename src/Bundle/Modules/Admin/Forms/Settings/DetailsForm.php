@@ -6,6 +6,7 @@ namespace Marktic\Settings\Bundle\Modules\Admin\Forms\Settings;
 
 use Marktic\Settings\AbstractSettings;
 use Marktic\Settings\Bundle\Library\Form\FormModel;
+use Marktic\Settings\Utility\MktSettings;
 
 class DetailsForm extends FormModel
 {
@@ -83,6 +84,7 @@ class DetailsForm extends FormModel
                 break;
         }
     }
+
     public function saveToModel()
     {
         $settings = $this->getSettings();
@@ -113,4 +115,10 @@ class DetailsForm extends FormModel
             });
         }
     }
+
+    public function saveModel()
+    {
+        MktSettings::manager()->save($this->getSettings());
+    }
+
 }
