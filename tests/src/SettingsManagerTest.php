@@ -47,6 +47,10 @@ class SettingsManagerTest extends AbstractTest
         self::assertSame(10, $settings->max_items);
         self::assertSame(0.2, $settings->tax_rate);
         self::assertSame(['en'], $settings->supported_locales);
+        self::assertSame('2026-01-01', $settings->launch_date);
+        self::assertSame('2026-01-01 10:00:00', $settings->maintenance_at);
+        self::assertSame('support@marktic.test', $settings->support_email);
+        self::assertSame('https://marktic.test', $settings->homepage_url);
     }
 
     public function testGetReturnsSameInstanceOnRepeatedCalls(): void
@@ -79,6 +83,10 @@ class SettingsManagerTest extends AbstractTest
         $settings->site_active = false;
         $settings->tax_rate = 0.15;
         $settings->supported_locales = ['en', 'de'];
+        $settings->launch_date = '2026-05-01';
+        $settings->maintenance_at = '2026-05-01T15:45';
+        $settings->support_email = ' admin@marktic.test ';
+        $settings->homepage_url = ' https://example.org/settings ';
 
         $this->manager->save($settings);
 
@@ -88,6 +96,10 @@ class SettingsManagerTest extends AbstractTest
         self::assertFalse($reloaded->site_active);
         self::assertSame(0.15, $reloaded->tax_rate);
         self::assertSame(['en', 'de'], $reloaded->supported_locales);
+        self::assertSame('2026-05-01', $reloaded->launch_date);
+        self::assertSame('2026-05-01 15:45:00', $reloaded->maintenance_at);
+        self::assertSame('admin@marktic.test', $reloaded->support_email);
+        self::assertSame('https://example.org/settings', $reloaded->homepage_url);
     }
 
     public function testGetWithTenantReturnsIsolatedInstance(): void

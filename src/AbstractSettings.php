@@ -56,6 +56,24 @@ abstract class AbstractSettings
         return null;
     }
 
+    /**
+     * Returns explicit setting types for properties that cannot be inferred
+     * from PHP scalar types (for example: date, datetime, email, url).
+     *
+     * @return array<string, string>
+     */
+    public static function settingTypes(): array
+    {
+        return [];
+    }
+
+    public static function settingType(string $property): ?string
+    {
+        $type = static::settingTypes()[$property] ?? null;
+
+        return is_string($type) ? strtolower($type) : null;
+    }
+
     public function getTenantType(): ?string
     {
         return $this->tenantType;
