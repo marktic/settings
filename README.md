@@ -4,11 +4,11 @@
 [![Tests](https://img.shields.io/github/actions/workflow/status/marktic/settings/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/marktic/settings/actions/workflows/run-tests.yml)
 [![License](https://img.shields.io/packagist/l/marktic/settings.svg?style=flat-square)](https://packagist.org/packages/marktic/settings)
 
-A multi-tenant settings management package for PHP 8.2+ applications. Supports typed values (string, JSON, integer, float, boolean), grouped settings, tenant-scoped configuration, and multiple storage adapters (database, cache file).
+A multi-tenant settings management package for PHP 8.2+ applications. Supports typed values (string, JSON, integer, float, boolean, date, datetime, email, url), grouped settings, tenant-scoped configuration, and multiple storage adapters (database, cache file).
 
 ## Features
 
-- **Typed settings**: PHP property types (`string`, `bool`, `int`, `float`, `array`) automatically determine the cast — no manual configuration needed
+- **Typed settings**: PHP property types (`string`, `bool`, `int`, `float`, `array`) automatically determine the cast, with explicit per-property overrides for `date`, `datetime`, `email`, and `url`
 - **Class-based settings**: Define settings as plain PHP classes extending `AbstractSettings`; properties with default values are automatically used as fallbacks
 - **Grouped settings**: Each settings class declares its group via `group()`
 - **Multi-tenant support**: Scope settings to any tenant by passing a tenant record to `SettingsManager::get()`
@@ -64,6 +64,24 @@ class GeneralSettings extends AbstractSettings
     public float $tax_rate = 0.2;
 
     public array $supported_locales = ['en'];
+
+    public string $launch_date = '2026-01-01';
+
+    public string $maintenance_at = '2026-01-01 10:00:00';
+
+    public string $support_email = 'support@example.com';
+
+    public string $homepage_url = 'https://example.com';
+
+    public static function settingTypes(): array
+    {
+        return [
+            'launch_date' => 'date',
+            'maintenance_at' => 'datetime',
+            'support_email' => 'email',
+            'homepage_url' => 'url',
+        ];
+    }
 
     // Determines the group used in storage
     public static function group(): string
@@ -176,7 +194,7 @@ Table: `mkt_settings`
 | `name` | `VARCHAR(191)` | Setting name/key |
 | `group` | `VARCHAR(100)` | Logical group, default: `"default"` |
 | `value` | `TEXT` | Raw stored value |
-| `type` | `VARCHAR(20)` | Value type: `string`, `json`, `integer`, `float`, `boolean` |
+| `type` | `VARCHAR(20)` | Value type: `string`, `json`, `integer`, `float`, `boolean`, `date`, `datetime`, `email`, `url` |
 | `tenant_type` | `VARCHAR(191)` | Tenant class/type (nullable) |
 | `tenant_id` | `BIGINT UNSIGNED` | Tenant identifier (nullable) |
 | `created_at` | `DATETIME` | Creation timestamp |

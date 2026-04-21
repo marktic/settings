@@ -38,4 +38,17 @@ class AbstractSettingsTest extends AbstractTest
     {
         self::assertSame('mymodule', NamespacedSettings::settingsNamespace());
     }
+
+    public function testSettingTypeDefaultsToNullWhenNotConfigured(): void
+    {
+        self::assertNull(AutoDerivedSettings::settingType('unknown'));
+    }
+
+    public function testSettingTypeReturnsConfiguredType(): void
+    {
+        self::assertSame('date', GeneralSettings::settingType('launch_date'));
+        self::assertSame('datetime', GeneralSettings::settingType('maintenance_at'));
+        self::assertSame('email', GeneralSettings::settingType('support_email'));
+        self::assertSame('url', GeneralSettings::settingType('homepage_url'));
+    }
 }

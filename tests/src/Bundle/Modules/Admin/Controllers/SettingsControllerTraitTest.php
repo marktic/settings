@@ -150,6 +150,10 @@ class SettingsControllerTraitTest extends AbstractTest
             'max_items'        => '5',
             'tax_rate'         => '0.07',
             'supported_locales' => '["en","ro"]',
+            'launch_date'      => '2026-06-21',
+            'maintenance_at'   => '2026-06-21T09:30',
+            'support_email'    => ' info@marktic.test ',
+            'homepage_url'     => ' https://example.com/app ',
         ]);
 
         $this->controller->exposePopulateSettingsFromForm($settings, $form);
@@ -163,6 +167,10 @@ class SettingsControllerTraitTest extends AbstractTest
         self::assertSame(5, $reloaded->max_items);
         self::assertSame(0.07, $reloaded->tax_rate);
         self::assertSame(['en', 'ro'], $reloaded->supported_locales);
+        self::assertSame('2026-06-21', $reloaded->launch_date);
+        self::assertSame('2026-06-21 09:30:00', $reloaded->maintenance_at);
+        self::assertSame('info@marktic.test', $reloaded->support_email);
+        self::assertSame('https://example.com/app', $reloaded->homepage_url);
     }
 
     // -------------------------------------------------------------------------

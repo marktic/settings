@@ -54,7 +54,7 @@ class SettingsHydrator
             }
 
             $name = $property->getName();
-            $type = $this->resolveSettingType($property->getType());
+            $type = $this->resolveSettingType($settings, $property);
             $value = $property->getValue($settings);
 
             if (isset($existing[$name])) {
@@ -89,8 +89,14 @@ class SettingsHydrator
         );
     }
 
-    private function resolveSettingType(?\ReflectionType $type): SettingType
+    private function resolveSettingType(AbstractSettings $settings, \ReflectionProperty $property): SettingType
     {
+        $explicitType = $settings::settingType($property->getName());
+        if ($explicitType !== null) {
+            return SettingType::tryFrom($explicitType) ?? SettingType::String;
+        }
+
+        $type = $property->getType();
         if (!$type instanceof \ReflectionNamedType) {
             return SettingType::String;
         }
