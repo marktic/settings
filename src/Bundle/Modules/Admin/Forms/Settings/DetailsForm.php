@@ -81,16 +81,15 @@ class DetailsForm extends FormModel
                 break;
 
             case 'date':
-                $this->addInput($name, $label);
-                $this->setElementInputType($name, 'date');
+                $this->addDateinput($name, $label);
                 if ($currentValue !== null) {
                     $this->getElement($name)->setValue($this->normalizeDate((string) $currentValue));
                 }
                 break;
 
             case 'datetime':
-                $this->addInput($name, $label);
-                $this->setElementInputType($name, 'datetime-local');
+                $this->addDateinput($name, $label);
+//                $this->setElementInputType($name, 'datetime-local');
                 if ($currentValue !== null) {
                     $this->getElement($name)->setValue($this->formatDateTimeForInput((string) $currentValue));
                 }
@@ -98,7 +97,7 @@ class DetailsForm extends FormModel
 
             case 'email':
                 $this->addInput($name, $label);
-                $this->setElementInputType($name, 'email');
+//                $this->setElementInputType($name, 'email');
                 if ($currentValue !== null) {
                     $this->getElement($name)->setValue((string) $currentValue);
                 }
@@ -106,7 +105,7 @@ class DetailsForm extends FormModel
 
             case 'url':
                 $this->addInput($name, $label);
-                $this->setElementInputType($name, 'url');
+//                $this->setElementInputType($name, 'url');
                 if ($currentValue !== null) {
                     $this->getElement($name)->setValue((string) $currentValue);
                 }
