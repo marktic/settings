@@ -111,6 +111,20 @@ class DetailsForm extends FormModel
                 }
                 break;
 
+            case 'select':
+                $options = $this->resolveSelectOptions($name, $typeName);
+                $this->addSelect($name, $label);
+                foreach ($options as $option) {
+                    $this->getElement($name)->addOption($option->value, $option->label);
+                }
+                if ($currentValue !== null) {
+                    $selectValue = $currentValue instanceof \BackedEnum
+                        ? (string) $currentValue->value
+                        : (string) $currentValue;
+                    $this->getElement($name)->setValue($selectValue);
+                }
+                break;
+
             default:
                 $this->addInput($name, $label);
                 if ($currentValue !== null) {
@@ -150,6 +164,7 @@ class DetailsForm extends FormModel
                 'date' => $this->normalizeDate((string) $rawValue),
                 'datetime' => $this->normalizeDateTime((string) $rawValue),
                 'email', 'url' => trim((string) $rawValue),
+                'select' => $this->castSelectValue($typeName, (string) $rawValue),
                 default => (string) $rawValue,
             });
         }
@@ -164,10 +179,58 @@ class DetailsForm extends FormModel
     {
         $explicitType = $this->settings::settingType($name);
         if ($explicitType === null) {
+            if ($this->isBackedEnum($defaultType)) {
+                return 'select';
+            }
             return $defaultType;
         }
 
         return SettingType::tryFrom($explicitType)?->value ?? $defaultType;
+    }
+
+    /**
+     * Returns the SelectOption list for a select field.
+     * Checks settingOption() first, then falls back to deriving from a backed enum type.
+     *
+     * @return \Marktic\Settings\Settings\Dto\SelectOption[]
+     */
+    private function resolveSelectOptions(string $name, string $typeName): array
+    {
+        $declared = $this->settings::settingOption($name);
+        if ($declared !== null) {
+            return $declared;
+        }
+
+        if ($this->isBackedEnum($typeName)) {
+            return array_map(
+                static fn(\UnitEnum $case) => \Marktic\Settings\Settings\Dto\SelectOption::fromEnum($case),
+                $typeName::cases()
+            );
+        }
+
+        return [];
+    }
+
+    /**
+     * Casts a raw string form value back to the appropriate type for a select field.
+     * For backed enum properties, returns the enum instance via tryFrom().
+     */
+    private function castSelectValue(string $typeName, string $rawValue): mixed
+    {
+        if ($this->isBackedEnum($typeName)) {
+            return $typeName::tryFrom($rawValue) ?? $rawValue;
+        }
+
+        return $rawValue;
+    }
+
+    private function isBackedEnum(string $className): bool
+    {
+        if (!enum_exists($className)) {
+            return false;
+        }
+
+        return (new \ReflectionEnum($className))->isBacked();
     }
 
     private function setElementInputType(string $name, string $type): void

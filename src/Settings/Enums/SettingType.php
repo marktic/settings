@@ -15,11 +15,13 @@ enum SettingType: string
     case DateTime = 'datetime';
     case Email = 'email';
     case Url = 'url';
+    case Select = 'select';
 
     public function cast(string $value): mixed
     {
         return match($this) {
             self::String => $value,
+            self::Select => $value,
             self::Json => json_decode($value, true),
             self::Integer => (int) $value,
             self::Float => (float) $value,
@@ -35,6 +37,7 @@ enum SettingType: string
     {
         return match($this) {
             self::String => (string) $value,
+            self::Select => $value instanceof \BackedEnum ? (string) $value->value : (string) $value,
             self::Json => json_encode($value, JSON_THROW_ON_ERROR),
             self::Integer => (string) (int) $value,
             self::Float => (string) (float) $value,

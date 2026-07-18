@@ -28,7 +28,9 @@ class SettingsHydrator
             if (!isset($indexed[$name])) {
                 continue;
             }
-            $property->setValue($settings, $indexed[$name]->getCastValue());
+            $castValue = $indexed[$name]->getCastValue();
+            $castValue = $this->castToPropertyType($property, $castValue);
+            $property->setValue($settings, $castValue);
         }
     }
 
@@ -101,12 +103,50 @@ class SettingsHydrator
             return SettingType::String;
         }
 
-        return match ($type->getName()) {
+        $typeName = $type->getName();
+
+        if ($this->isBackedEnum($typeName)) {
+            return SettingType::Select;
+        }
+
+        return match ($typeName) {
             'bool' => SettingType::Boolean,
             'int' => SettingType::Integer,
             'float' => SettingType::Float,
             'array' => SettingType::Json,
             default => SettingType::String,
         };
+    }
+
+    /**
+     * If the property's PHP type is a backed enum, casts a raw string value back
+     * to the appropriate enum instance using tryFrom().
+     */
+    private function castToPropertyType(\ReflectionProperty $property, mixed $value): mixed
+    {
+        if (!is_string($value)) {
+            return $value;
+        }
+
+        $type = $property->getType();
+        if (!$type instanceof \ReflectionNamedType) {
+            return $value;
+        }
+
+        $typeName = $type->getName();
+        if ($this->isBackedEnum($typeName)) {
+            return $typeName::tryFrom($value) ?? $value;
+        }
+
+        return $value;
+    }
+
+    private function isBackedEnum(string $className): bool
+    {
+        if (!enum_exists($className)) {
+            return false;
+        }
+
+        return (new \ReflectionEnum($className))->isBacked();
     }
 }

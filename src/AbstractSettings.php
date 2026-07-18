@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Marktic\Settings;
 
+use Marktic\Settings\Settings\Dto\SelectOption;
 use Marktic\Settings\Utility\MktSettings;
 
 abstract class AbstractSettings
@@ -72,6 +73,51 @@ abstract class AbstractSettings
         $type = static::settingTypes()[$property] ?? null;
 
         return is_string($type) ? strtolower($type) : null;
+    }
+
+    /**
+     * Returns a map of property name → options definition for select settings.
+     *
+     * Each value may be either:
+     * - A backed enum FQCN string (e.g. `Theme::class`): cases are resolved automatically.
+     * - An array of SelectOption objects: used as-is.
+     *
+     * For properties typed directly as a backed enum, options are also derived
+     * automatically without requiring an entry here.
+     *
+     * @return array<string, class-string|\BackedEnum|SelectOption[]>
+     */
+    public static function settingOptions(): array
+    {
+        return [];
+    }
+
+    /**
+     * Returns the resolved SelectOption list for a given property, or null when
+     * no options are declared and the property type is not a backed enum.
+     *
+     * @return SelectOption[]|null
+     */
+    public static function settingOption(string $property): ?array
+    {
+        $definition = static::settingOptions()[$property] ?? null;
+
+        if ($definition === null) {
+            return null;
+        }
+
+        if (is_string($definition) && enum_exists($definition)) {
+            return array_map(
+                static fn(\UnitEnum $case) => SelectOption::fromEnum($case),
+                $definition::cases()
+            );
+        }
+
+        if (is_array($definition)) {
+            return $definition;
+        }
+
+        return null;
     }
 
     public function getTenantType(): ?string
