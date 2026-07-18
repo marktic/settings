@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Marktic\Settings;
 
+use Marktic\Settings\Settings\Attributes\AsSettingType;
 use Marktic\Settings\Settings\Dto\SelectOption;
 use Marktic\Settings\Utility\MktSettings;
 
@@ -72,7 +73,31 @@ abstract class AbstractSettings
     {
         $type = static::settingTypes()[$property] ?? null;
 
-        return is_string($type) ? strtolower($type) : null;
+        if (is_string($type)) {
+            return strtolower($type);
+        }
+
+        return static::settingTypeFromAttribute($property);
+    }
+
+    /**
+     * Reads the setting type declared via the #[AsSettingType] attribute on the property,
+     * or returns null when the attribute is not present.
+     */
+    private static function settingTypeFromAttribute(string $property): ?string
+    {
+        try {
+            $reflection = new \ReflectionProperty(static::class, $property);
+        } catch (\ReflectionException) {
+            return null;
+        }
+
+        $attributes = $reflection->getAttributes(AsSettingType::class);
+        if (empty($attributes)) {
+            return null;
+        }
+
+        return $attributes[0]->newInstance()->type;
     }
 
     /**
