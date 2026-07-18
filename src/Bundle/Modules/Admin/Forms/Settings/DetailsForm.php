@@ -125,6 +125,35 @@ class DetailsForm extends FormModel
                 }
                 break;
 
+            case 'radio':
+                $options = $this->resolveSelectOptions($name, $typeName);
+                $this->addRadioGroup($name, $label);
+                foreach ($options as $option) {
+                    $this->getElement($name)->addOption($option->value, $option->label);
+                }
+                if ($currentValue !== null) {
+                    $radioValue = $currentValue instanceof \BackedEnum
+                        ? (string) $currentValue->value
+                        : (string) $currentValue;
+                    $this->getElement($name)->setValue($radioValue);
+                }
+                break;
+
+            case 'multiselect':
+                $options = $this->resolveSelectOptions($name, $typeName);
+                $this->addCheckboxGroup($name, $label);
+                foreach ($options as $option) {
+                    $this->getElement($name)->addOption($option->value, $option->label);
+                }
+                if (is_array($currentValue) && count($currentValue) > 0) {
+                    $checkedValues = array_map(
+                        static fn(mixed $v) => $v instanceof \BackedEnum ? (string) $v->value : (string) $v,
+                        $currentValue
+                    );
+                    $this->getElement($name)->setValue($checkedValues);
+                }
+                break;
+
             default:
                 $this->addInput($name, $label);
                 if ($currentValue !== null) {
@@ -164,7 +193,8 @@ class DetailsForm extends FormModel
                 'date' => $this->normalizeDate((string) $rawValue),
                 'datetime' => $this->normalizeDateTime((string) $rawValue),
                 'email', 'url' => trim((string) $rawValue),
-                'select' => $this->castSelectValue($typeName, (string) $rawValue),
+                'select', 'radio' => $this->castSelectValue($typeName, (string) $rawValue),
+                'multiselect' => is_array($rawValue) ? $rawValue : [],
                 default => (string) $rawValue,
             });
         }
@@ -181,6 +211,9 @@ class DetailsForm extends FormModel
         if ($explicitType === null) {
             if ($this->isBackedEnum($defaultType)) {
                 return 'select';
+            }
+            if ($defaultType === 'array' && $this->settings::settingOption($name) !== null) {
+                return 'multiselect';
             }
             return $defaultType;
         }

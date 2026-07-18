@@ -113,7 +113,9 @@ class SettingsHydrator
             'bool' => SettingType::Boolean,
             'int' => SettingType::Integer,
             'float' => SettingType::Float,
-            'array' => SettingType::Json,
+            'array' => $settings::settingOption($property->getName()) !== null
+                ? SettingType::MultiSelect
+                : SettingType::Json,
             default => SettingType::String,
         };
     }

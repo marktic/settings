@@ -16,13 +16,17 @@ enum SettingType: string
     case Email = 'email';
     case Url = 'url';
     case Select = 'select';
+    case Radio = 'radio';
+    case MultiSelect = 'multiselect';
 
     public function cast(string $value): mixed
     {
         return match($this) {
             self::String => $value,
             self::Select => $value,
-            self::Json => json_decode($value, true),
+            self::Radio => $value,
+            self::Json,
+            self::MultiSelect => json_decode($value, true),
             self::Integer => (int) $value,
             self::Float => (float) $value,
             self::Boolean => filter_var($value, FILTER_VALIDATE_BOOLEAN),
@@ -37,8 +41,16 @@ enum SettingType: string
     {
         return match($this) {
             self::String => (string) $value,
-            self::Select => $value instanceof \BackedEnum ? (string) $value->value : (string) $value,
+            self::Select,
+            self::Radio => $value instanceof \BackedEnum ? (string) $value->value : (string) $value,
             self::Json => json_encode($value, JSON_THROW_ON_ERROR),
+            self::MultiSelect => json_encode(
+                array_map(
+                    static fn(mixed $v) => $v instanceof \BackedEnum ? (string) $v->value : (string) $v,
+                    is_array($value) ? $value : []
+                ),
+                JSON_THROW_ON_ERROR
+            ),
             self::Integer => (string) (int) $value,
             self::Float => (string) (float) $value,
             self::Boolean => $value ? '1' : '0',
