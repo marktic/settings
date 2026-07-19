@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Marktic\Settings;
 
+use Marktic\Settings\Settings\Attributes\AsSettingType;
+use Marktic\Settings\Settings\Dto\SelectOption;
+use Marktic\Settings\Settings\Enums\SettingType;
 use Marktic\Settings\Utility\MktSettings;
 
 abstract class AbstractSettings
@@ -60,18 +63,101 @@ abstract class AbstractSettings
      * Returns explicit setting types for properties that cannot be inferred
      * from PHP scalar types (for example: date, datetime, email, url).
      *
-     * @return array<string, string>
+     * Values may be either a SettingType enum case or its string equivalent (e.g. 'date').
+     *
+     * @return array<string, string|SettingType>
      */
     public static function settingTypes(): array
     {
         return [];
     }
 
-    public static function settingType(string $property): ?string
+    /**
+     * Returns the explicit SettingType for a property, or null to fall back to auto-detection.
+     *
+     * Resolution priority:
+     *   1. settingTypes() array
+     *   2. #[AsSettingType] attribute on the property
+     *   3. null  (caller performs PHP-type inference)
+     */
+    public static function settingType(string $property): ?SettingType
     {
-        $type = static::settingTypes()[$property] ?? null;
+        $declared = static::settingTypes()[$property] ?? null;
 
-        return is_string($type) ? strtolower($type) : null;
+        if ($declared instanceof SettingType) {
+            return $declared;
+        }
+
+        if (is_string($declared)) {
+            return SettingType::tryFrom(strtolower($declared));
+        }
+
+        return static::settingTypeFromAttribute($property);
+    }
+
+    /**
+     * Reads the SettingType declared via the #[AsSettingType] attribute on the property,
+     * or returns null when the attribute is not present.
+     */
+    private static function settingTypeFromAttribute(string $property): ?SettingType
+    {
+        try {
+            $reflection = new \ReflectionProperty(static::class, $property);
+        } catch (\ReflectionException) {
+            return null;
+        }
+
+        $attributes = $reflection->getAttributes(AsSettingType::class);
+        if (empty($attributes)) {
+            return null;
+        }
+
+        return $attributes[0]->newInstance()->type;
+    }
+
+    /**
+     * Returns a map of property name → options definition for select settings.
+     *
+     * Each value may be either:
+     * - A backed enum FQCN string (e.g. `Theme::class`): cases are resolved automatically.
+     * - An array of SelectOption objects: used as-is.
+     *
+     * For properties typed directly as a backed enum, options are also derived
+     * automatically without requiring an entry here.
+     *
+     * @return array<string, class-string|\BackedEnum|SelectOption[]>
+     */
+    public static function settingOptions(): array
+    {
+        return [];
+    }
+
+    /**
+     * Returns the resolved SelectOption list for a given property, or null when
+     * no options are declared and the property type is not a backed enum.
+     *
+     * @return SelectOption[]|null
+     */
+    public static function settingOption(string $property): ?array
+    {
+        $definition = static::settingOptions()[$property] ?? null;
+
+        if ($definition === null) {
+            return null;
+        }
+
+        if (is_string($definition) && enum_exists($definition)) {
+            return array_map(
+                static fn(\UnitEnum $case) => SelectOption::fromEnum($case),
+                $definition::cases()
+            );
+        }
+
+        if (is_array($definition)) {
+            return $definition;
+        }
+
+        return null;
     }
 
     public function getTenantType(): ?string

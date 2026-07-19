@@ -15,12 +15,39 @@ enum SettingType: string
     case DateTime = 'datetime';
     case Email = 'email';
     case Url = 'url';
+    case Select = 'select';
+    case Radio = 'radio';
+    case MultiSelect = 'multiselect';
+    case CheckboxGroup = 'checkboxgroup';
+
+    /**
+     * Infers a SettingType from a PHP scalar type name.
+     *
+     * Used to auto-detect a storage/display type when no explicit type is declared.
+     *
+     * @param string $phpType  The PHP type name: 'bool', 'int', 'float', 'array', 'string', …
+     * @param bool   $hasOptions  When true and $phpType is 'array', returns MultiSelect instead of Json.
+     */
+    public static function fromPhpType(string $phpType, bool $hasOptions = false): self
+    {
+        return match ($phpType) {
+            'bool' => self::Boolean,
+            'int' => self::Integer,
+            'float' => self::Float,
+            'array' => $hasOptions ? self::MultiSelect : self::Json,
+            default => self::String,
+        };
+    }
 
     public function cast(string $value): mixed
     {
         return match($this) {
             self::String => $value,
-            self::Json => json_decode($value, true),
+            self::Select => $value,
+            self::Radio => $value,
+            self::Json,
+            self::MultiSelect,
+            self::CheckboxGroup => json_decode($value, true),
             self::Integer => (int) $value,
             self::Float => (float) $value,
             self::Boolean => filter_var($value, FILTER_VALIDATE_BOOLEAN),
@@ -35,7 +62,17 @@ enum SettingType: string
     {
         return match($this) {
             self::String => (string) $value,
+            self::Select,
+            self::Radio => $value instanceof \BackedEnum ? (string) $value->value : (string) $value,
             self::Json => json_encode($value, JSON_THROW_ON_ERROR),
+            self::MultiSelect,
+            self::CheckboxGroup => json_encode(
+                array_map(
+                    static fn(mixed $v) => $v instanceof \BackedEnum ? (string) $v->value : (string) $v,
+                    is_array($value) ? $value : []
+                ),
+                JSON_THROW_ON_ERROR
+            ),
             self::Integer => (string) (int) $value,
             self::Float => (string) (float) $value,
             self::Boolean => $value ? '1' : '0',

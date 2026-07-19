@@ -28,7 +28,9 @@ class SettingsHydrator
             if (!isset($indexed[$name])) {
                 continue;
             }
-            $property->setValue($settings, $indexed[$name]->getCastValue());
+            $castValue = $indexed[$name]->getCastValue();
+            $castValue = $this->castToPropertyType($property, $castValue);
+            $property->setValue($settings, $castValue);
         }
     }
 
@@ -91,22 +93,55 @@ class SettingsHydrator
 
     private function resolveSettingType(AbstractSettings $settings, \ReflectionProperty $property): SettingType
     {
-        $explicitType = $settings::settingType($property->getName());
-        if ($explicitType !== null) {
-            return SettingType::tryFrom($explicitType) ?? SettingType::String;
+        $explicit = $settings::settingType($property->getName());
+        if ($explicit !== null) {
+            return $explicit;
+        }
+
+        $phpType = $property->getType();
+        if (!$phpType instanceof \ReflectionNamedType) {
+            return SettingType::String;
+        }
+
+        $typeName = $phpType->getName();
+
+        if ($this->isBackedEnum($typeName)) {
+            return SettingType::Select;
+        }
+
+        $hasOptions = $settings::settingOption($property->getName()) !== null;
+        return SettingType::fromPhpType($typeName, $hasOptions);
+    }
+
+    /**
+     * If the property's PHP type is a backed enum, casts a raw string value back
+     * to the appropriate enum instance using tryFrom().
+     */
+    private function castToPropertyType(\ReflectionProperty $property, mixed $value): mixed
+    {
+        if (!is_string($value)) {
+            return $value;
         }
 
         $type = $property->getType();
         if (!$type instanceof \ReflectionNamedType) {
-            return SettingType::String;
+            return $value;
         }
 
-        return match ($type->getName()) {
-            'bool' => SettingType::Boolean,
-            'int' => SettingType::Integer,
-            'float' => SettingType::Float,
-            'array' => SettingType::Json,
-            default => SettingType::String,
-        };
+        $typeName = $type->getName();
+        if ($this->isBackedEnum($typeName)) {
+            return $typeName::tryFrom($value) ?? $value;
+        }
+
+        return $value;
+    }
+
+    private function isBackedEnum(string $className): bool
+    {
+        if (!enum_exists($className)) {
+            return false;
+        }
+
+        return (new \ReflectionEnum($className))->isBacked();
     }
 }
