@@ -50,23 +50,24 @@ class DetailsForm extends FormModel
 
             $name = $property->getName();
             $label = ucwords(str_replace('_', ' ', $name));
-            $type = $property->getType();
-            $typeName = $type instanceof \ReflectionNamedType ? $type->getName() : 'string';
+            $phpTypeName = $property->getType() instanceof \ReflectionNamedType
+                ? $property->getType()->getName()
+                : 'string';
 
             $currentValue = $property->isInitialized($this->settings)
                 ? $property->getValue($this->settings)
                 : null;
 
-            $this->addFieldForType($name, $label, $typeName, $currentValue);
+            $this->addFieldForType($name, $label, $phpTypeName, $currentValue);
         }
     }
 
-    protected function addFieldForType(string $name, string $label, string $typeName, mixed $currentValue): void
+    protected function addFieldForType(string $name, string $label, string $phpTypeName, mixed $currentValue): void
     {
-        $resolvedType = $this->resolveFieldType($name, $typeName);
+        $type = $this->resolveFieldType($name, $phpTypeName);
 
-        switch ($resolvedType) {
-            case 'bool':
+        switch ($type) {
+            case SettingType::Boolean:
                 $this->addCheckbox($name, $label);
                 if ($currentValue) {
                     $this->getElement($name)->setValue('1');
@@ -74,45 +75,36 @@ class DetailsForm extends FormModel
                 }
                 break;
 
-            case 'array':
+            case SettingType::Json:
                 $encoded = is_array($currentValue) ? json_encode($currentValue, JSON_PRETTY_PRINT) : '';
                 $this->addTextarea($name, $label);
                 $this->getElement($name)->setValue($encoded);
                 break;
 
-            case 'date':
+            case SettingType::Date:
                 $this->addDateinput($name, $label);
                 if ($currentValue !== null) {
                     $this->getElement($name)->setValue($this->normalizeDate((string) $currentValue));
                 }
                 break;
 
-            case 'datetime':
+            case SettingType::DateTime:
                 $this->addDateinput($name, $label);
-//                $this->setElementInputType($name, 'datetime-local');
                 if ($currentValue !== null) {
                     $this->getElement($name)->setValue($this->formatDateTimeForInput((string) $currentValue));
                 }
                 break;
 
-            case 'email':
+            case SettingType::Email:
+            case SettingType::Url:
                 $this->addInput($name, $label);
-//                $this->setElementInputType($name, 'email');
                 if ($currentValue !== null) {
                     $this->getElement($name)->setValue((string) $currentValue);
                 }
                 break;
 
-            case 'url':
-                $this->addInput($name, $label);
-//                $this->setElementInputType($name, 'url');
-                if ($currentValue !== null) {
-                    $this->getElement($name)->setValue((string) $currentValue);
-                }
-                break;
-
-            case 'select':
-                $options = $this->resolveSelectOptions($name, $typeName);
+            case SettingType::Select:
+                $options = $this->resolveSelectOptions($name, $phpTypeName);
                 $this->addSelect($name, $label);
                 foreach ($options as $option) {
                     $this->getElement($name)->addOption($option->value, $option->label);
@@ -125,8 +117,8 @@ class DetailsForm extends FormModel
                 }
                 break;
 
-            case 'radio':
-                $options = $this->resolveSelectOptions($name, $typeName);
+            case SettingType::Radio:
+                $options = $this->resolveSelectOptions($name, $phpTypeName);
                 $this->addRadioGroup($name, $label);
                 foreach ($options as $option) {
                     $this->getElement($name)->addOption($option->value, $option->label);
@@ -139,8 +131,8 @@ class DetailsForm extends FormModel
                 }
                 break;
 
-            case 'multiselect':
-                $options = $this->resolveSelectOptions($name, $typeName);
+            case SettingType::MultiSelect:
+                $options = $this->resolveSelectOptions($name, $phpTypeName);
                 $this->addSelect($name, $label);
                 $this->getElement($name)->setAttrib('multiple', 'multiple');
                 foreach ($options as $option) {
@@ -155,8 +147,8 @@ class DetailsForm extends FormModel
                 }
                 break;
 
-            case 'checkboxgroup':
-                $options = $this->resolveSelectOptions($name, $typeName);
+            case SettingType::CheckboxGroup:
+                $options = $this->resolveSelectOptions($name, $phpTypeName);
                 $this->addCheckboxGroup($name, $label);
                 foreach ($options as $option) {
                     $this->getElement($name)->addOption($option->value, $option->label);
@@ -197,20 +189,21 @@ class DetailsForm extends FormModel
             }
 
             $rawValue = $element->getValue();
-            $type = $property->getType();
-            $typeName = $type instanceof \ReflectionNamedType ? $type->getName() : 'string';
-            $resolvedType = $this->resolveFieldType($name, $typeName);
+            $phpTypeName = $property->getType() instanceof \ReflectionNamedType
+                ? $property->getType()->getName()
+                : 'string';
+            $type = $this->resolveFieldType($name, $phpTypeName);
 
-            $property->setValue($settings, match ($resolvedType) {
-                'bool' => (bool) filter_var($rawValue, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
-                'int' => (int) $rawValue,
-                'float' => (float) $rawValue,
-                'array' => is_array($rawValue) ? $rawValue : (array) json_decode((string) $rawValue, true),
-                'date' => $this->normalizeDate((string) $rawValue),
-                'datetime' => $this->normalizeDateTime((string) $rawValue),
-                'email', 'url' => trim((string) $rawValue),
-                'select', 'radio' => $this->castSelectValue($typeName, (string) $rawValue),
-                'multiselect', 'checkboxgroup' => is_array($rawValue) ? $rawValue : [],
+            $property->setValue($settings, match ($type) {
+                SettingType::Boolean => (bool) filter_var($rawValue, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
+                SettingType::Integer => (int) $rawValue,
+                SettingType::Float => (float) $rawValue,
+                SettingType::Json => is_array($rawValue) ? $rawValue : (array) json_decode((string) $rawValue, true),
+                SettingType::Date => $this->normalizeDate((string) $rawValue),
+                SettingType::DateTime => $this->normalizeDateTime((string) $rawValue),
+                SettingType::Email, SettingType::Url => trim((string) $rawValue),
+                SettingType::Select, SettingType::Radio => $this->castSelectValue($phpTypeName, (string) $rawValue),
+                SettingType::MultiSelect, SettingType::CheckboxGroup => is_array($rawValue) ? $rawValue : [],
                 default => (string) $rawValue,
             });
         }
@@ -221,39 +214,44 @@ class DetailsForm extends FormModel
         MktSettings::manager()->save($this->getSettings());
     }
 
-    private function resolveFieldType(string $name, string $defaultType): string
+    /**
+     * Resolves the SettingType for a property.
+     *
+     * Priority: explicit type from settingType() → backed-enum auto-detect
+     * → PHP-type inference via SettingType::fromPhpType().
+     */
+    private function resolveFieldType(string $name, string $phpTypeName): SettingType
     {
-        $explicitType = $this->settings::settingType($name);
-        if ($explicitType === null) {
-            if ($this->isBackedEnum($defaultType)) {
-                return 'select';
-            }
-            if ($defaultType === 'array' && $this->settings::settingOption($name) !== null) {
-                return 'multiselect';
-            }
-            return $defaultType;
+        $explicit = $this->settings::settingType($name);
+        if ($explicit !== null) {
+            return $explicit;
         }
 
-        return SettingType::tryFrom($explicitType)?->value ?? $defaultType;
+        if ($this->isBackedEnum($phpTypeName)) {
+            return SettingType::Select;
+        }
+
+        $hasOptions = $this->settings::settingOption($name) !== null;
+        return SettingType::fromPhpType($phpTypeName, $hasOptions);
     }
 
     /**
-     * Returns the SelectOption list for a select field.
+     * Returns the SelectOption list for a select/radio/multi-select field.
      * Checks settingOption() first, then falls back to deriving from a backed enum type.
      *
      * @return \Marktic\Settings\Settings\Dto\SelectOption[]
      */
-    private function resolveSelectOptions(string $name, string $typeName): array
+    private function resolveSelectOptions(string $name, string $phpTypeName): array
     {
         $declared = $this->settings::settingOption($name);
         if ($declared !== null) {
             return $declared;
         }
 
-        if ($this->isBackedEnum($typeName)) {
+        if ($this->isBackedEnum($phpTypeName)) {
             return array_map(
                 static fn(\UnitEnum $case) => \Marktic\Settings\Settings\Dto\SelectOption::fromEnum($case),
-                $typeName::cases()
+                $phpTypeName::cases()
             );
         }
 
@@ -264,10 +262,10 @@ class DetailsForm extends FormModel
      * Casts a raw string form value back to the appropriate type for a select field.
      * For backed enum properties, returns the enum instance via tryFrom().
      */
-    private function castSelectValue(string $typeName, string $rawValue): mixed
+    private function castSelectValue(string $phpTypeName, string $rawValue): mixed
     {
-        if ($this->isBackedEnum($typeName)) {
-            return $typeName::tryFrom($rawValue) ?? $rawValue;
+        if ($this->isBackedEnum($phpTypeName)) {
+            return $phpTypeName::tryFrom($rawValue) ?? $rawValue;
         }
 
         return $rawValue;
@@ -280,23 +278,6 @@ class DetailsForm extends FormModel
         }
 
         return (new \ReflectionEnum($className))->isBacked();
-    }
-
-    private function setElementInputType(string $name, string $type): void
-    {
-        $element = $this->getElement($name);
-        if ($element === null) {
-            return;
-        }
-
-        if (method_exists($element, 'setAttribute')) {
-            $element->setAttribute('type', $type);
-            return;
-        }
-
-        if (method_exists($element, 'setAttrib')) {
-            $element->setAttrib('type', $type);
-        }
     }
 
     private function formatDateTimeForInput(string $value): string

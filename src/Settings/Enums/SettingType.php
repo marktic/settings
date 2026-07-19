@@ -20,6 +20,25 @@ enum SettingType: string
     case MultiSelect = 'multiselect';
     case CheckboxGroup = 'checkboxgroup';
 
+    /**
+     * Infers a SettingType from a PHP scalar type name.
+     *
+     * Used to auto-detect a storage/display type when no explicit type is declared.
+     *
+     * @param string $phpType  The PHP type name: 'bool', 'int', 'float', 'array', 'string', …
+     * @param bool   $hasOptions  When true and $phpType is 'array', returns MultiSelect instead of Json.
+     */
+    public static function fromPhpType(string $phpType, bool $hasOptions = false): self
+    {
+        return match ($phpType) {
+            'bool' => self::Boolean,
+            'int' => self::Integer,
+            'float' => self::Float,
+            'array' => $hasOptions ? self::MultiSelect : self::Json,
+            default => self::String,
+        };
+    }
+
     public function cast(string $value): mixed
     {
         return match($this) {

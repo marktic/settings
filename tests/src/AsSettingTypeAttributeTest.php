@@ -14,29 +14,29 @@ class AsSettingTypeAttributeTest extends AbstractTest
 {
     public function testSettingTypeReadsStringAttributeOnProperty(): void
     {
-        self::assertSame('date', AttributeTypedSettings::settingType('launch_date'));
-        self::assertSame('datetime', AttributeTypedSettings::settingType('maintenance_at'));
+        self::assertSame(SettingType::Date, AttributeTypedSettings::settingType('launch_date'));
+        self::assertSame(SettingType::DateTime, AttributeTypedSettings::settingType('maintenance_at'));
     }
 
     public function testSettingTypeReadsEnumAttributeOnProperty(): void
     {
-        self::assertSame('email', AttributeTypedSettings::settingType('support_email'));
-        self::assertSame('url', AttributeTypedSettings::settingType('homepage_url'));
+        self::assertSame(SettingType::Email, AttributeTypedSettings::settingType('support_email'));
+        self::assertSame(SettingType::Url, AttributeTypedSettings::settingType('homepage_url'));
     }
 
     public function testSettingTypeReadsRadioAttributeOnProperty(): void
     {
-        self::assertSame('radio', AttributeTypedSettings::settingType('preferred_theme'));
+        self::assertSame(SettingType::Radio, AttributeTypedSettings::settingType('preferred_theme'));
     }
 
     public function testSettingTypeReadsMultiSelectAttributeOnProperty(): void
     {
-        self::assertSame('multiselect', AttributeTypedSettings::settingType('tags'));
+        self::assertSame(SettingType::MultiSelect, AttributeTypedSettings::settingType('tags'));
     }
 
     public function testSettingTypeReadsCheckboxGroupAttributeOnProperty(): void
     {
-        self::assertSame('checkboxgroup', AttributeTypedSettings::settingType('active_features'));
+        self::assertSame(SettingType::CheckboxGroup, AttributeTypedSettings::settingType('active_features'));
     }
 
     public function testSettingTypeReturnsNullForPropertiesWithoutAttribute(): void
@@ -49,8 +49,8 @@ class AsSettingTypeAttributeTest extends AbstractTest
     {
         // GeneralSettings declares types via settingTypes() without using the attribute;
         // this verifies the existing mechanism is unaffected.
-        self::assertSame('date', GeneralSettings::settingType('launch_date'));
-        self::assertSame('email', GeneralSettings::settingType('support_email'));
+        self::assertSame(SettingType::Date, GeneralSettings::settingType('launch_date'));
+        self::assertSame(SettingType::Email, GeneralSettings::settingType('support_email'));
     }
 
     public function testHydratorUsesAttributeTypeForExtract(): void

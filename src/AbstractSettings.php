@@ -6,6 +6,7 @@ namespace Marktic\Settings;
 
 use Marktic\Settings\Settings\Attributes\AsSettingType;
 use Marktic\Settings\Settings\Dto\SelectOption;
+use Marktic\Settings\Settings\Enums\SettingType;
 use Marktic\Settings\Utility\MktSettings;
 
 abstract class AbstractSettings
@@ -62,29 +63,43 @@ abstract class AbstractSettings
      * Returns explicit setting types for properties that cannot be inferred
      * from PHP scalar types (for example: date, datetime, email, url).
      *
-     * @return array<string, string>
+     * Values may be either a SettingType enum case or its string equivalent (e.g. 'date').
+     *
+     * @return array<string, string|SettingType>
      */
     public static function settingTypes(): array
     {
         return [];
     }
 
-    public static function settingType(string $property): ?string
+    /**
+     * Returns the explicit SettingType for a property, or null to fall back to auto-detection.
+     *
+     * Resolution priority:
+     *   1. settingTypes() array
+     *   2. #[AsSettingType] attribute on the property
+     *   3. null  (caller performs PHP-type inference)
+     */
+    public static function settingType(string $property): ?SettingType
     {
-        $type = static::settingTypes()[$property] ?? null;
+        $declared = static::settingTypes()[$property] ?? null;
 
-        if (is_string($type)) {
-            return strtolower($type);
+        if ($declared instanceof SettingType) {
+            return $declared;
+        }
+
+        if (is_string($declared)) {
+            return SettingType::tryFrom(strtolower($declared));
         }
 
         return static::settingTypeFromAttribute($property);
     }
 
     /**
-     * Reads the setting type declared via the #[AsSettingType] attribute on the property,
+     * Reads the SettingType declared via the #[AsSettingType] attribute on the property,
      * or returns null when the attribute is not present.
      */
-    private static function settingTypeFromAttribute(string $property): ?string
+    private static function settingTypeFromAttribute(string $property): ?SettingType
     {
         try {
             $reflection = new \ReflectionProperty(static::class, $property);

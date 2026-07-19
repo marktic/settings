@@ -9,6 +9,7 @@ use Marktic\Settings\Tests\Fixtures\Settings\GeneralSettings;
 use Marktic\Settings\Tests\Fixtures\Settings\NameOverrideSettings;
 use Marktic\Settings\Tests\Fixtures\Settings\NamespacedSettings;
 use Marktic\Settings\Tests\Fixtures\Settings\TenantSettings;
+use Marktic\Settings\Settings\Enums\SettingType;
 
 class AbstractSettingsTest extends AbstractTest
 {
@@ -46,9 +47,9 @@ class AbstractSettingsTest extends AbstractTest
 
     public function testSettingTypeReturnsConfiguredType(): void
     {
-        self::assertSame('date', GeneralSettings::settingType('launch_date'));
-        self::assertSame('datetime', GeneralSettings::settingType('maintenance_at'));
-        self::assertSame('email', GeneralSettings::settingType('support_email'));
-        self::assertSame('url', GeneralSettings::settingType('homepage_url'));
+        self::assertSame(SettingType::Date, GeneralSettings::settingType('launch_date'));
+        self::assertSame(SettingType::DateTime, GeneralSettings::settingType('maintenance_at'));
+        self::assertSame(SettingType::Email, GeneralSettings::settingType('support_email'));
+        self::assertSame(SettingType::Url, GeneralSettings::settingType('homepage_url'));
     }
 }

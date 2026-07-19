@@ -32,10 +32,12 @@ use Marktic\Settings\Settings\Enums\SettingType;
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
 final class AsSettingType
 {
-    public readonly string $type;
+    public readonly SettingType $type;
 
     public function __construct(string|SettingType $type)
     {
-        $this->type = $type instanceof SettingType ? $type->value : strtolower($type);
+        $this->type = $type instanceof SettingType
+            ? $type
+            : SettingType::from(strtolower($type));
     }
 }

@@ -93,31 +93,24 @@ class SettingsHydrator
 
     private function resolveSettingType(AbstractSettings $settings, \ReflectionProperty $property): SettingType
     {
-        $explicitType = $settings::settingType($property->getName());
-        if ($explicitType !== null) {
-            return SettingType::tryFrom($explicitType) ?? SettingType::String;
+        $explicit = $settings::settingType($property->getName());
+        if ($explicit !== null) {
+            return $explicit;
         }
 
-        $type = $property->getType();
-        if (!$type instanceof \ReflectionNamedType) {
+        $phpType = $property->getType();
+        if (!$phpType instanceof \ReflectionNamedType) {
             return SettingType::String;
         }
 
-        $typeName = $type->getName();
+        $typeName = $phpType->getName();
 
         if ($this->isBackedEnum($typeName)) {
             return SettingType::Select;
         }
 
-        return match ($typeName) {
-            'bool' => SettingType::Boolean,
-            'int' => SettingType::Integer,
-            'float' => SettingType::Float,
-            'array' => $settings::settingOption($property->getName()) !== null
-                ? SettingType::MultiSelect
-                : SettingType::Json,
-            default => SettingType::String,
-        };
+        $hasOptions = $settings::settingOption($property->getName()) !== null;
+        return SettingType::fromPhpType($typeName, $hasOptions);
     }
 
     /**
