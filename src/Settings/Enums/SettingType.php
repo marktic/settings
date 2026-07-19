@@ -18,6 +18,7 @@ enum SettingType: string
     case Select = 'select';
     case Radio = 'radio';
     case MultiSelect = 'multiselect';
+    case CheckboxGroup = 'checkboxgroup';
 
     public function cast(string $value): mixed
     {
@@ -26,7 +27,8 @@ enum SettingType: string
             self::Select => $value,
             self::Radio => $value,
             self::Json,
-            self::MultiSelect => json_decode($value, true),
+            self::MultiSelect,
+            self::CheckboxGroup => json_decode($value, true),
             self::Integer => (int) $value,
             self::Float => (float) $value,
             self::Boolean => filter_var($value, FILTER_VALIDATE_BOOLEAN),
@@ -44,7 +46,8 @@ enum SettingType: string
             self::Select,
             self::Radio => $value instanceof \BackedEnum ? (string) $value->value : (string) $value,
             self::Json => json_encode($value, JSON_THROW_ON_ERROR),
-            self::MultiSelect => json_encode(
+            self::MultiSelect,
+            self::CheckboxGroup => json_encode(
                 array_map(
                     static fn(mixed $v) => $v instanceof \BackedEnum ? (string) $v->value : (string) $v,
                     is_array($value) ? $value : []

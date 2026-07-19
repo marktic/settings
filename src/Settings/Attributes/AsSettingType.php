@@ -19,6 +19,15 @@ use Marktic\Settings\Settings\Enums\SettingType;
  *
  *     #[AsSettingType(SettingType::Email)]
  *     public string $contact_email = '';
+ *
+ *     #[AsSettingType(SettingType::Radio)]
+ *     public string $preferred_theme = 'light';
+ *
+ *     #[AsSettingType(SettingType::MultiSelect)]
+ *     public array $tags = [];
+ *
+ *     #[AsSettingType(SettingType::CheckboxGroup)]
+ *     public array $active_features = [];
  */
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
 final class AsSettingType

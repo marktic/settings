@@ -141,6 +141,22 @@ class DetailsForm extends FormModel
 
             case 'multiselect':
                 $options = $this->resolveSelectOptions($name, $typeName);
+                $this->addSelect($name, $label);
+                $this->getElement($name)->setAttrib('multiple', 'multiple');
+                foreach ($options as $option) {
+                    $this->getElement($name)->addOption($option->value, $option->label);
+                }
+                if (is_array($currentValue) && count($currentValue) > 0) {
+                    $checkedValues = array_map(
+                        static fn(mixed $v) => $v instanceof \BackedEnum ? (string) $v->value : (string) $v,
+                        $currentValue
+                    );
+                    $this->getElement($name)->setValue($checkedValues);
+                }
+                break;
+
+            case 'checkboxgroup':
+                $options = $this->resolveSelectOptions($name, $typeName);
                 $this->addCheckboxGroup($name, $label);
                 foreach ($options as $option) {
                     $this->getElement($name)->addOption($option->value, $option->label);
@@ -194,7 +210,7 @@ class DetailsForm extends FormModel
                 'datetime' => $this->normalizeDateTime((string) $rawValue),
                 'email', 'url' => trim((string) $rawValue),
                 'select', 'radio' => $this->castSelectValue($typeName, (string) $rawValue),
-                'multiselect' => is_array($rawValue) ? $rawValue : [],
+                'multiselect', 'checkboxgroup' => is_array($rawValue) ? $rawValue : [],
                 default => (string) $rawValue,
             });
         }
