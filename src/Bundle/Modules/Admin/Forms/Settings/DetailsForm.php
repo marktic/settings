@@ -68,11 +68,10 @@ class DetailsForm extends FormModel
 
         switch ($type) {
             case SettingType::Boolean:
-                $this->addCheckbox($name, $label);
-                if ($currentValue) {
-                    $this->getElement($name)->setValue('1');
-                    $this->getElement($name)->setChecked(true);
-                }
+                $this->addRadioGroup($name, $label);
+                $this->getElement($name)->addOption('1', translator()->trans('yes'));
+                $this->getElement($name)->addOption('0', translator()->trans('no'));
+                $this->getElement($name)->setValue($currentValue !== null && (bool) $currentValue ? '1' : '0');
                 break;
 
             case SettingType::Json:
