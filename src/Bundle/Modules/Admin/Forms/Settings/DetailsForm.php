@@ -69,8 +69,8 @@ class DetailsForm extends FormModel
         switch ($type) {
             case SettingType::Boolean:
                 $this->addRadioGroup($name, $label);
-                $this->getElement($name)->addOption('1', 'yes');
-                $this->getElement($name)->addOption('0', 'no');
+                $this->getElement($name)->addOption('1', translator()->trans('yes'));
+                $this->getElement($name)->addOption('0', translator()->trans('no'));
                 $this->getElement($name)->setValue($currentValue !== null && (bool) $currentValue ? '1' : '0');
                 break;
 
