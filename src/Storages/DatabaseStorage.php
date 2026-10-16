@@ -99,7 +99,7 @@ class DatabaseStorage implements SettingStorageInterface
             $params['where'][] = ['tenant_id = ?', $tenantId];
         }
 
-        $records = $this->repository->findAll($params);
+        $records = $this->repository->findByParams($params);
         $dtos = [];
         foreach ($records as $record) {
             $dtos[] = $this->mapper->fromRecord($record);
